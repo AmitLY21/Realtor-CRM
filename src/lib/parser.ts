@@ -5,9 +5,9 @@ export interface ParsedPropertyDraft {
   transaction_type: TransactionType
   property_type: PropertyType
   is_exclusive: boolean
-  city: string
-  neighborhood: string
-  street: string
+  city?: string
+  neighborhood?: string
+  street?: string
   house_number?: string
   rooms?: number
   floor?: number
@@ -25,6 +25,7 @@ export interface ParsedPropertyDraft {
   raw_text: string
   confidenceScore: number // 0-100%
   extractedFields: string[]
+  missingFields: string[]
 }
 
 export function parseRawListingText(rawText: string): ParsedPropertyDraft {
@@ -84,9 +85,22 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     }
   }
 
-  // Pattern C: Currency formatted standalone prices (e.g. 3,730,000 ש"ח or 5,200 ש"ח/חודש)
+  // Pattern C: Decimal millions (e.g. 2.9M ש"ח, 3.5 מיליון ₪, 4.2M)
   if (!price) {
-    const currencyMatch = text.match(/(\d{1,3}(?:,\d{3})+)\s*(?:₪|ש"ח|שח)/i)
+    const millionMatch = text.match(/(?:^|[^\wא-ת])(\d+(?:\.\d+)?)\s*(?:M|מיליון|מיל)\s*(?:ש"ח|ש״ח|שח|₪)?/i)
+    if (millionMatch) {
+      const val = parseFloat(millionMatch[1])
+      if (val > 0.1 && val < 200) { // e.g. 0.5M - 200M
+        price = Math.round(val * 1000000)
+        priceFoundType = 'sale'
+        extractedFields.push(`מחיר: ${price.toLocaleString()} ₪`)
+      }
+    }
+  }
+
+  // Pattern D: Currency formatted standalone prices (e.g. 3,730,000 ש"ח, 2,400,000 ₪, 5,200 ש"ח/חודש)
+  if (!price) {
+    const currencyMatch = text.match(/(\d{1,3}(?:,\d{3})+)\s*(?:₪|ש"ח|ש״ח|שח)/i)
     if (currencyMatch) {
       const val = parseInt(currencyMatch[1].replace(/,/g, ''), 10)
       price = val
@@ -330,18 +344,16 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
 
   if (street) extractedFields.push(`רחוב: ${street} ${house_number || ''}`.trim())
 
-  // Default fallbacks for city and neighborhood
-  if (!city) {
+  // Match city and neighborhood if known from registry
+  if (!city && street) {
     const regMatch = ISRAELI_STREET_REGISTRY.find(e => e.street === street)
     if (regMatch) {
       city = regMatch.city
       neighborhood = regMatch.neighborhood
-    } else {
-      city = 'תל אביב-יפו'
     }
   }
 
-  if (!neighborhood && street) {
+  if (!neighborhood && street && city) {
     const n = lookupNeighborhoodByStreet(street, city)
     if (n) neighborhood = n
   }
@@ -361,11 +373,20 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     extractedFields.push(`איש קשר: ${contact_name}`)
   }
 
-  // 12. Calculate Confidence Score
-  let score = 20
+  // 12. Calculate Missing Fields & High-Assurance Confidence Score
+  const missingFields: string[] = []
+  if (!street) missingFields.push('רחוב')
+  if (!city) missingFields.push('עיר')
+  if (!price) missingFields.push('מחיר')
+  if (!rooms) missingFields.push('חדרים')
+  if (floor === undefined) missingFields.push('קומה')
+  if (!sqm) missingFields.push('שטח מ״ר')
+
+  let score = 0
+  if (street) score += 20
+  if (city) score += 15
+  if (price) score += 25
   if (rooms) score += 20
-  if (price) score += 20
-  if (street && street !== 'לא צוין') score += 20
   if (floor !== undefined) score += 10
   if (sqm) score += 10
 
@@ -373,14 +394,14 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     transaction_type,
     property_type,
     is_exclusive,
-    city: city || 'תל אביב-יפו',
-    neighborhood: neighborhood || 'מרכז העיר',
-    street: street || 'לא צוין',
+    city: city || '',
+    neighborhood: neighborhood || '',
+    street: street || '',
     house_number,
     rooms,
-    floor: floor ?? 1,
-    total_floors: total_floors ?? 4,
-    sqm: sqm ?? 80,
+    floor,
+    total_floors,
+    sqm,
     price,
     has_mamad,
     has_elevator,
@@ -392,6 +413,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     contact_phone,
     raw_text: text,
     confidenceScore: Math.min(score, 100),
-    extractedFields
+    extractedFields,
+    missingFields
   }
 }

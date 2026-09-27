@@ -24,21 +24,46 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   const [rawText, setRawText] = useState('')
   const [draft, setDraft] = useState<ParsedPropertyDraft | null>(null)
   const [duplicateWarning, setDuplicateWarning] = useState<Property | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Editable fields state for manual completion/corrections
+  const [formCity, setFormCity] = useState('')
+  const [formStreet, setFormStreet] = useState('')
+  const [formHouseNumber, setFormHouseNumber] = useState('')
+  const [formPrice, setFormPrice] = useState<string>('')
+  const [formRooms, setFormRooms] = useState<string>('')
+  const [formFloor, setFormFloor] = useState<string>('')
+  const [formTotalFloors, setFormTotalFloors] = useState<string>('')
+  const [formSqm, setFormSqm] = useState<string>('')
+  const [formNeighborhood, setFormNeighborhood] = useState('')
 
   // Reactively parse as user types or pastes
   useEffect(() => {
     if (!rawText.trim()) {
       setDraft(null)
       setDuplicateWarning(null)
+      setValidationError(null)
       return
     }
 
     const parsed = parseRawListingText(rawText)
     setDraft(parsed)
+    setValidationError(null)
+
+    // Populate editable inputs with parsed results (or blank if unassured)
+    setFormCity(parsed.city || '')
+    setFormStreet(parsed.street || '')
+    setFormHouseNumber(parsed.house_number || '')
+    setFormPrice(parsed.price !== undefined ? String(parsed.price) : '')
+    setFormRooms(parsed.rooms !== undefined ? String(parsed.rooms) : '')
+    setFormFloor(parsed.floor !== undefined ? String(parsed.floor) : '')
+    setFormTotalFloors(parsed.total_floors !== undefined ? String(parsed.total_floors) : '')
+    setFormSqm(parsed.sqm !== undefined ? String(parsed.sqm) : '')
+    setFormNeighborhood(parsed.neighborhood || '')
 
     // Check duplicate
-    if (parsed.street && parsed.street !== 'לא צוין') {
+    if (parsed.street && parsed.city) {
       checkPropertyDuplicate(parsed.city, parsed.street, parsed.house_number, parsed.rooms, parsed.floor).then(dup => {
         setDuplicateWarning(dup || null)
       })
@@ -46,6 +71,15 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   }, [rawText])
 
   if (!isOpen) return null
+
+  // Calculate fields currently requiring manual completion
+  const missingFieldList: { field: string; label: string }[] = []
+  if (!formStreet.trim()) missingFieldList.push({ field: 'street', label: 'רחוב' })
+  if (!formCity.trim()) missingFieldList.push({ field: 'city', label: 'עיר' })
+  if (!formPrice.trim() || Number(formPrice) <= 0) missingFieldList.push({ field: 'price', label: 'מחיר' })
+  if (!formRooms.trim() || Number(formRooms) <= 0) missingFieldList.push({ field: 'rooms', label: 'חדרים' })
+  if (!formFloor.trim()) missingFieldList.push({ field: 'floor', label: 'קומה' })
+  if (!formSqm.trim() || Number(formSqm) <= 0) missingFieldList.push({ field: 'sqm', label: 'שטח מ״ר' })
 
   const handleSampleWhatsApp = () => {
     const sample = `*דירה חדשה למכירה בבלעדיות בלב תל אביב!*
@@ -61,10 +95,29 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
   const handleSave = async () => {
     if (!draft) return
+
+    // Require critical minimum fields
+    if (!formStreet.trim() || !formCity.trim()) {
+      setValidationError('נא להזין לפחות עיר ורחוב לפני השמירה למאגר.')
+      return
+    }
+
+    const priceNum = Number(formPrice) || 0
+    if (priceNum <= 0) {
+      setValidationError('נא להזין מחיר תקין עבור הנכס.')
+      return
+    }
+
     setIsSubmitting(true)
+    setValidationError(null)
 
     try {
       const now = new Date().toISOString()
+      const roomsNum = Number(formRooms) || 3
+      const floorNum = formFloor ? Number(formFloor) : 0
+      const totalFloorsNum = formTotalFloors ? Number(formTotalFloors) : Math.max(floorNum, 1)
+      const sqmNum = Number(formSqm) || 0
+
       const newProperty: Property = {
         id: `prop-${Date.now()}`,
         created_at: now,
@@ -76,17 +129,17 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
           ? new Date(Date.now() + 180 * 24 * 3600 * 1000).toISOString().split('T')[0]
           : undefined,
         property_type: draft.property_type,
-        city: draft.city,
-        neighborhood: draft.neighborhood,
-        street: draft.street,
-        house_number: draft.house_number || '',
-        rooms: draft.rooms || 3,
-        floor: draft.floor || 1,
-        total_floors: draft.total_floors || 4,
-        sqm: draft.sqm || 75,
-        price: draft.price || 3500000,
+        city: formCity.trim(),
+        neighborhood: formNeighborhood.trim() || 'מרכז העיר',
+        street: formStreet.trim(),
+        house_number: formHouseNumber.trim(),
+        rooms: roomsNum,
+        floor: floorNum,
+        total_floors: totalFloorsNum,
+        sqm: sqmNum,
+        price: priceNum,
         price_history: [
-          { price: draft.price || 3500000, changed_at: now, note: 'קליטה ראשונית מוואטסאפ' }
+          { price: priceNum, changed_at: now, note: 'קליטה ראשונית מוואטסאפ' }
         ],
         has_mamad: draft.has_mamad,
         has_elevator: draft.has_elevator,
@@ -94,7 +147,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         has_storage: draft.has_storage,
         parking_type: draft.parking_type,
         parking_legal: draft.parking_legal,
-        public_slug: `${draft.street.replace(/\s+/g, '-')}-${Date.now().toString(36)}`,
+        public_slug: `${formStreet.trim().replace(/\s+/g, '-')}-${Date.now().toString(36)}`,
         hide_exact_address: true, // Default to protected anti-poaching mode
         notes: draft.raw_text,
         photos: [
@@ -116,7 +169,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -125,7 +178,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">קליטה מהירה מוואטסאפ / יד2</h3>
-              <p className="text-xs text-slate-500">הדבק הודעה טקסטואלית לחילוץ אוטומטי</p>
+              <p className="text-xs text-slate-500">הדבק הודעה טקסטואלית לחילוץ אוטומטי ובקרה ידנית</p>
             </div>
           </div>
           <button
@@ -155,11 +208,39 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             <textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="לדוגמה: למכירה בבוגרשוב 3.5 חדרים קומה 3 עם מעלית וממ״ד, חניה בטאבו 4.65M ש״ח..."
-              rows={4}
+              placeholder="לדוגמה: למכירה בבוגרשוב 52, 3.5 חדרים קומה 3 עם מעלית וממ״ד, חניה בטאבו 4.65M ש״ח..."
+              rows={3}
               className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:bg-white focus:outline-none focus:border-blue-600 transition-colors resize-none leading-relaxed"
             />
           </div>
+
+          {/* Missing Fields Warning Banner */}
+          {draft && missingFieldList.length > 0 && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-2.5 text-xs">
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1.5 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-amber-900">
+                    שים לב: {missingFieldList.length} שדות לא זוהו בוודאות והושארו ריקים
+                  </span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900">
+                    נדרשת השלמה ידנית
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  הטקסט לא הכיל זיהוי חד-משמעי עבור שדות אלו. אנא השלם אותם ידנית בטופס שלמטה לפני ההוספה למאגר.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {missingFieldList.map(({ field, label }) => (
+                    <span key={field} className="px-2 py-0.5 rounded bg-white/90 border border-amber-300 text-amber-800 text-[10px] font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      {label} דורש מילוי
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Duplicate Warning */}
           {duplicateWarning && (
@@ -174,9 +255,9 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             </div>
           )}
 
-          {/* Live Extraction Preview */}
+          {/* Live Extraction Preview Badges */}
           {draft && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2.5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
@@ -199,21 +280,21 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">מיקום</span>
                   <span className="font-semibold text-slate-800 truncate block">
-                    {draft.street} {draft.house_number || ''}, {draft.city}
+                    {formStreet || 'רחוב לא זוהה'} {formHouseNumber || ''}{formCity ? `, ${formCity}` : ''}
                   </span>
                 </div>
 
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">מחיר</span>
                   <span className="font-bold text-slate-900">
-                    {draft.price ? `${draft.price.toLocaleString()} ₪` : 'לא צוין'}
+                    {formPrice ? `${Number(formPrice).toLocaleString()} ₪` : 'דורש מילוי ידני'}
                   </span>
                 </div>
 
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">חדרים וקומה</span>
                   <span className="font-semibold text-slate-800">
-                    {draft.rooms || '-'} חד׳ • קומה {draft.floor ?? '-'}
+                    {formRooms ? `${formRooms} חד׳` : 'לא זוהה'} • קומה {formFloor || '-'}
                   </span>
                 </div>
 
@@ -235,6 +316,186 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* Manual Review and Completion Inputs */}
+              <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800">
+                    עריכה והשלמת פרטים ידנית:
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    ניתן לערוך כל שדה לפני השמירה
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  {/* Street & House Number */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">רחוב ומספר</label>
+                      {!formStreet.trim() ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={formStreet}
+                        onChange={(e) => setFormStreet(e.target.value)}
+                        placeholder="שם הרחוב..."
+                        className={`flex-1 p-2 rounded-lg text-xs border transition-colors ${
+                          !formStreet.trim()
+                            ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                            : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        value={formHouseNumber}
+                        onChange={(e) => setFormHouseNumber(e.target.value)}
+                        placeholder="מס׳"
+                        className="w-16 p-2 rounded-lg text-xs border border-slate-200 bg-white text-slate-900 focus:border-blue-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">עיר</label>
+                      {!formCity.trim() ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={formCity}
+                      onChange={(e) => setFormCity(e.target.value)}
+                      placeholder="שם העיר..."
+                      className={`w-full p-2 rounded-lg text-xs border transition-colors ${
+                        !formCity.trim()
+                          ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                          : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">מחיר (₪)</label>
+                      {!formPrice.trim() || Number(formPrice) <= 0 ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      value={formPrice}
+                      onChange={(e) => setFormPrice(e.target.value)}
+                      placeholder="לדוגמה: 3500000"
+                      className={`w-full p-2 rounded-lg text-xs border transition-colors ${
+                        !formPrice.trim() || Number(formPrice) <= 0
+                          ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                          : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Rooms */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">מספר חדרים</label>
+                      {!formRooms.trim() || Number(formRooms) <= 0 ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={formRooms}
+                      onChange={(e) => setFormRooms(e.target.value)}
+                      placeholder="לדוגמה: 3.5"
+                      className={`w-full p-2 rounded-lg text-xs border transition-colors ${
+                        !formRooms.trim() || Number(formRooms) <= 0
+                          ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                          : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Floor and Total Floors */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">קומה ומתוך קומות</label>
+                      {!formFloor.trim() ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <div className="flex gap-1.5 items-center">
+                      <input
+                        type="number"
+                        value={formFloor}
+                        onChange={(e) => setFormFloor(e.target.value)}
+                        placeholder="קומה"
+                        className={`w-1/2 p-2 rounded-lg text-xs border transition-colors ${
+                          !formFloor.trim()
+                            ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                            : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                        }`}
+                      />
+                      <span className="text-slate-400 text-xs">מתוך</span>
+                      <input
+                        type="number"
+                        value={formTotalFloors}
+                        onChange={(e) => setFormTotalFloors(e.target.value)}
+                        placeholder="קומות"
+                        className="w-1/2 p-2 rounded-lg text-xs border border-slate-200 bg-white text-slate-900 focus:border-blue-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sqm */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-slate-700">שטח בנוי (מ״ר)</label>
+                      {!formSqm.trim() || Number(formSqm) <= 0 ? (
+                        <span className="text-[10px] text-amber-600 font-semibold">נדרשת השלמה</span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-600 font-medium">✓ הוזן</span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      value={formSqm}
+                      onChange={(e) => setFormSqm(e.target.value)}
+                      placeholder="לדוגמה: 85"
+                      className={`w-full p-2 rounded-lg text-xs border transition-colors ${
+                        !formSqm.trim() || Number(formSqm) <= 0
+                          ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
+                          : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Validation Error Message */}
+          {validationError && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <span>{validationError}</span>
             </div>
           )}
         </div>

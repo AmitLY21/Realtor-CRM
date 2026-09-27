@@ -79,6 +79,38 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('text=בוגרשוב 52').first()).toBeVisible()
   })
 
+  test('3b. Smart Paste informs user about blank unassured fields and allows manual completion before saving', async ({ page }) => {
+    // Click "הוספה" -> "הדבקה מהירה (וואטסאפ)"
+    await page.click('button:has-text("הוספה")')
+    await page.click('text=הדבקה מהירה (וואטסאפ)')
+
+    await expect(page.locator('text=קליטה מהירה מוואטסאפ / יד2')).toBeVisible()
+
+    // Type partial listing text without street or city
+    const textarea = page.locator('textarea')
+    await textarea.fill('דירת 3 חדרים למכירה, קומה 2, מחיר 2,400,000 ש"ח')
+
+    // Verify warning banner and manual completion badge
+    await expect(page.locator('text=/שים לב: \\d+ שדות לא זוהו בוודאות והושארו ריקים/')).toBeVisible()
+    await expect(page.locator('text=נדרשת השלמה ידנית').first()).toBeVisible()
+    await expect(page.locator('text=עיר דורש מילוי')).toBeVisible()
+    await expect(page.locator('text=רחוב דורש מילוי')).toBeVisible()
+
+    // Attempting to save without street/city triggers validation notice
+    await page.click('button:has-text("אישור והוספה למאגר")')
+    await expect(page.locator('text=נא להזין לפחות עיר ורחוב לפני השמירה למאגר')).toBeVisible()
+
+    // Manually complete street and city
+    await page.fill('input[placeholder="שם הרחוב..."]', 'קריניצי')
+    await page.fill('input[placeholder="שם העיר..."]', 'רמת גן')
+
+    // Now save successfully
+    await page.click('button:has-text("אישור והוספה למאגר")')
+
+    // Should switch to Properties tab and show the manually completed property
+    await expect(page.locator('text=קריניצי').first()).toBeVisible()
+  })
+
   test('4. Leads & Kanban Pipeline: Add new lead and advance stage', async ({ page }) => {
     // Click "לקוחות ומשפך"
     await page.click('button:has-text("לקוחות ומשפך")')

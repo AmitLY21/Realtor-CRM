@@ -126,5 +126,54 @@ test.describe('Deterministic Israeli Real Estate Text Parser Suite', () => {
     expect(parsed.parking_legal).toBe('tabu')
     expect(parsed.price).toBe(3730000)
     expect(parsed.confidenceScore).toBe(100)
+    expect(parsed.missingFields).toHaveLength(0)
+  })
+
+  test('Example 6: Unassured fields are left blank without hardcoded fake defaults', () => {
+    const text = `דירה מדהימה להשכרה, 3 חדרים עם מעלית וממ״ד`
+
+    const parsed = parseRawListingText(text)
+
+    expect(parsed.rooms).toBe(3)
+    expect(parsed.transaction_type).toBe('rent')
+    expect(parsed.has_elevator).toBe(true)
+    expect(parsed.has_mamad).toBe(true)
+
+    // Unassured fields MUST be blank/undefined instead of fake defaults
+    expect(parsed.street).toBe('')
+    expect(parsed.city).toBe('')
+    expect(parsed.neighborhood).toBe('')
+    expect(parsed.floor).toBeUndefined()
+    expect(parsed.total_floors).toBeUndefined()
+    expect(parsed.sqm).toBeUndefined()
+    expect(parsed.price).toBeUndefined()
+
+    // Missing fields should accurately reflect unassured parameters
+    expect(parsed.missingFields).toEqual(
+      expect.arrayContaining(['רחוב', 'עיר', 'מחיר', 'קומה', 'שטח מ״ר'])
+    )
+    expect(parsed.confidenceScore).toBeLessThan(50)
+  })
+
+  test('Example 7: Partial listing with price and rooms leaves street, city and floor blank', () => {
+    const text = `למכירה 4 חד' 2.9M ש״ח, מרפסת וחניה`
+
+    const parsed = parseRawListingText(text)
+
+    expect(parsed.rooms).toBe(4)
+    expect(parsed.price).toBe(2900000)
+    expect(parsed.transaction_type).toBe('sale')
+    expect(parsed.has_balcony).toBe(true)
+    expect(parsed.parking_type).toBe('single')
+
+    // Blank fields
+    expect(parsed.street).toBe('')
+    expect(parsed.city).toBe('')
+    expect(parsed.floor).toBeUndefined()
+    expect(parsed.sqm).toBeUndefined()
+
+    expect(parsed.missingFields).toEqual(
+      expect.arrayContaining(['רחוב', 'עיר', 'קומה', 'שטח מ״ר'])
+    )
   })
 })
