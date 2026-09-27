@@ -19,6 +19,8 @@ interface NotificationCenterProps {
   onMarkAllAsRead: () => void
 }
 
+const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   isOpen,
   onClose,
@@ -37,8 +39,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       alert('דפדפן זה אינו תומך בהתראות פוש מקוריות.')
     }
   }
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end bg-slate-900/30 backdrop-blur-xs animate-in fade-in duration-150">
@@ -68,7 +68,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         </div>
 
         {/* iOS PWA A2HS Banner */}
-        {isIOS && (
+        {IS_IOS && (
           <div className="m-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
             <div className="flex items-center gap-1.5 font-bold text-slate-900">
               <Smartphone className="w-4 h-4 text-blue-600" />
