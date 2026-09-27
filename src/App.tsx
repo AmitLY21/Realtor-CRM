@@ -30,6 +30,7 @@ import { PropertyPublicView } from './components/PropertyPublicView'
 import { PriceUpdateModal } from './components/PriceUpdateModal'
 import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { NotificationCenter } from './components/NotificationCenter'
+import { OnboardingTourModal } from './components/OnboardingTourModal'
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
@@ -43,6 +44,7 @@ export function App() {
   const [publicPreviewProp, setPublicPreviewProp] = useState<Property | null>(null)
   const [isPrintMode, setIsPrintMode] = useState(false)
   const [priceUpdateProp, setPriceUpdateProp] = useState<Property | null>(null)
+  const [isOnboardingTourOpen, setIsOnboardingTourOpen] = useState(false)
 
   // Notifications
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
@@ -61,6 +63,12 @@ export function App() {
       await ensureStoragePersistence()
       setNotifications(getNotifications())
       setIsInitialized(true)
+
+      // First-time onboarding tour auto-launch
+      const hasSeenTour = typeof window !== 'undefined' && localStorage.getItem('realtor_crm_onboarded') === 'true'
+      if (!hasSeenTour) {
+        setIsOnboardingTourOpen(true)
+      }
 
       // Handle Web Share Target API query params (e.g. /?share=1&text=...)
       const params = new URLSearchParams(window.location.search)
@@ -249,6 +257,7 @@ export function App() {
             onUpdateAgentProfile={async (newProfile) => {
               await db.settings.put({ key: 'agent_profile', value: newProfile })
             }}
+            onOpenOnboardingTour={() => setIsOnboardingTourOpen(true)}
           />
         )}
       </main>
@@ -304,6 +313,21 @@ export function App() {
         onClose={() => setIsNotificationsOpen(false)}
         notifications={notifications}
         onMarkAllAsRead={handleMarkAllNotificationsRead}
+      />
+
+      <OnboardingTourModal
+        isOpen={isOnboardingTourOpen}
+        onClose={() => {
+          localStorage.setItem('realtor_crm_onboarded', 'true')
+          setIsOnboardingTourOpen(false)
+        }}
+        initialProfile={agentProfile}
+        onComplete={async (newProfile) => {
+          await db.settings.put({ key: 'agent_profile', value: newProfile })
+          localStorage.setItem('realtor_crm_onboarded', 'true')
+          await sendPushNotification('ברוך הבא ל-Realtor CRM!', `פרופיל המתווך של ${newProfile.name} הוגדר בהצלחה.`, 'match')
+          setNotifications(getNotifications())
+        }}
       />
     </div>
   )

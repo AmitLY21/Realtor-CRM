@@ -2,10 +2,14 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
   test.beforeEach(async ({ page }) => {
+    // Set onboarded flag by default for general tests
+    await page.addInitScript(() => {
+      window.localStorage.setItem('realtor_crm_onboarded', 'true')
+    })
     // Navigate to the app running on localhost:5174
     await page.goto('http://localhost:5174/')
     // Wait for Dexie seed data to initialize
-    await expect(page.locator('text=/Realtor[- ]?CRM/i')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('header h1:has-text("RealtorCRM")')).toBeVisible({ timeout: 10000 })
   })
 
   test('1. App mounts with Hebrew RTL and displays Dashboard with Exclusivity Radar & Heskem Tivuch', async ({ page }) => {
@@ -243,6 +247,93 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     // Navigate back to Dashboard and verify demo data restored
     await page.click('button:has-text("לוח בקרה")')
     await expect(page.locator('text=ראדאר בלעדיות (מסתיים תוך 14 יום!)')).toBeVisible()
+  })
+
+  test('10. First-time onboarding tour: complete multi-step guide and save realtor profile', async ({ page }) => {
+    // Open Settings and trigger onboarding tour wizard
+    await page.click('button:has-text("הגדרות")')
+    await page.click('button:has-text("הפעל סיור מודרך מחדש")')
+
+    // Step 1: Welcome & Superpowers
+    await expect(page.locator('text=ברוך הבא ל-Realtor CRM! 🇮🇱')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('text=שלב 1 מתוך 3')).toBeVisible()
+
+    // Test direct interactive tab switch to Step 3 (making page 3 active)
+    await page.click('button:has-text("3. פרטי מתווך")')
+
+    // Step 3 is now active
+    await expect(page.locator('text=שלב 3 מתוך 3')).toBeVisible()
+    await expect(page.locator('text=הגדרת פרטי המתווך והסוכנות (הבסיס שלך)')).toBeVisible()
+
+    // Verify initial data is blank with hint placeholder labels (no dummy demo data!)
+    const nameInput = page.locator('input[placeholder*="ישראל ישראלי"]')
+    const phoneInput = page.locator('input[placeholder*="054-1234567"]')
+    await expect(nameInput).toHaveValue('')
+    await expect(phoneInput).toHaveValue('')
+
+    // Fill in real profile info
+    await nameInput.fill('איתן ישראלי')
+    await phoneInput.fill('054-7776655')
+    await page.fill('input[placeholder*="שם המשרד"]', 'ישראלי נכסים')
+    await page.fill('input[placeholder*="מספר רישיון"]', '55443-02')
+
+    // Finish tour with active finish button
+    await page.click('button:has-text("סיים והתחל לעבוד!")')
+
+    // Modal closes
+    await expect(page.locator('text=ברוך הבא ל-Realtor CRM! 🇮🇱')).not.toBeVisible()
+
+    // Verify Settings reflects saved realtor profile
+    await expect(page.locator('input[value="איתן ישראלי"]')).toBeVisible()
+    await expect(page.locator('input[value="054-7776655"]')).toBeVisible()
+    await expect(page.locator('input[value="ישראלי נכסים"]')).toBeVisible()
+  })
+})
+
+test.describe('First-time user onboarding tour auto-launch', () => {
+  test('First launch triggers tour automatically, Step 3 is fully active with hint labels and blank initial data', async ({ page }) => {
+    // Navigate and ensure clean slate onboarding
+    await page.goto('http://localhost:5174/')
+    await page.evaluate(() => localStorage.removeItem('realtor_crm_onboarded'))
+    await page.reload()
+
+    // Step 1: Welcome modal is shown automatically on first visit
+    await expect(page.locator('text=ברוך הבא ל-Realtor CRM! 🇮🇱')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('text=שלב 1 מתוך 3')).toBeVisible()
+
+    // Navigate sequentially: Step 1 -> Step 2
+    await page.click('button:has-text("הבא: איך המערכת עובדת")')
+    await expect(page.locator('text=שלב 2 מתוך 3')).toBeVisible()
+
+    // Navigate sequentially: Step 2 -> Step 3
+    await page.click('button:has-text("הבא: הגדרת פרטי המתווך")')
+    await expect(page.locator('text=שלב 3 מתוך 3')).toBeVisible()
+    await expect(page.locator('text=הגדרת פרטי המתווך והסוכנות (הבסיס שלך)')).toBeVisible()
+
+    // Verify initial values are completely empty (hint labels only, no dummy data)
+    const nameInput = page.locator('input[placeholder*="ישראל ישראלי"]')
+    const phoneInput = page.locator('input[placeholder*="054-1234567"]')
+    const agencyInput = page.locator('input[placeholder*="שם המשרד"]')
+    const licenseInput = page.locator('input[placeholder*="מספר רישיון"]')
+
+    await expect(nameInput).toHaveValue('')
+    await expect(phoneInput).toHaveValue('')
+    await expect(agencyInput).toHaveValue('')
+    await expect(licenseInput).toHaveValue('')
+
+    // Fill realtor details
+    await nameInput.fill('יוסי כהן')
+    await phoneInput.fill('050-1234567')
+    await agencyInput.fill('כהן נכסים ונדל״ן')
+    await licenseInput.fill('12345')
+
+    // Click active finish button
+    await page.click('button:has-text("סיים והתחל לעבוד!")')
+
+    // Modal closes and realtor_crm_onboarded flag is set
+    await expect(page.locator('text=ברוך הבא ל-Realtor CRM! 🇮🇱')).not.toBeVisible()
+    const isOnboarded = await page.evaluate(() => localStorage.getItem('realtor_crm_onboarded'))
+    expect(isOnboarded).toBe('true')
   })
 })
 

@@ -13,19 +13,29 @@ import {
   CheckCircle2, 
   FileText,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Sparkles
 } from 'lucide-react'
 
 interface SettingsViewProps {
   agentProfile: AgentProfile
   onUpdateAgentProfile: (profile: AgentProfile) => void
+  onOpenOnboardingTour?: () => void
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   agentProfile,
-  onUpdateAgentProfile
+  onUpdateAgentProfile,
+  onOpenOnboardingTour
 }) => {
   const [profile, setProfile] = useState<AgentProfile>(agentProfile)
+
+  React.useEffect(() => {
+    if (agentProfile) {
+      setProfile(agentProfile)
+    }
+  }, [agentProfile])
+
   const [supabaseUrl, setSupabaseUrl] = useState('')
   const [supabaseKey, setSupabaseKey] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -67,14 +77,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 1. AGENT PROFILE & LEGAL SETTINGS */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs space-y-5">
-        <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-          <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-            <Shield className="w-5 h-5" />
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900">פרטי סוכן ורישיון (חוק המתווכים 1996)</h3>
+              <p className="text-xs text-slate-500">פרטים אלו מופיעים בהסכמי תיווך ובדפי נכס ציבוריים</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900">פרטי סוכן ורישיון (חוק המתווכים 1996)</h3>
-            <p className="text-xs text-slate-500">פרטים אלו מופיעים בהסכמי תיווך ובדפי נכס ציבוריים</p>
-          </div>
+
+          {onOpenOnboardingTour && (
+            <button
+              type="button"
+              onClick={onOpenOnboardingTour}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>הפעל סיור מודרך מחדש</span>
+            </button>
+          )}
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
