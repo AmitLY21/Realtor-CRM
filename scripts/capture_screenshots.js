@@ -28,6 +28,11 @@ async function capture() {
   await page.waitForTimeout(500)
   await page.screenshot({ path: path.join(artifactDir, 'screenshot_matches.png'), fullPage: true })
 
+  // 5. Settings view
+  await page.click('button:has-text("הגדרות")')
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: path.join(artifactDir, 'screenshot_settings.png'), fullPage: true })
+
   await browser.close()
   console.log('All screenshots captured successfully!')
 }

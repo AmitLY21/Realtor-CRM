@@ -5,7 +5,6 @@ import {
   Building2, 
   Search, 
   Filter, 
-  Plus, 
   Share2, 
   Printer, 
   Eye, 
@@ -15,9 +14,10 @@ import {
   Check, 
   Copy, 
   ExternalLink,
-  ShieldCheck,
+  Shield,
   Car,
-  Home
+  Home,
+  CheckCircle2
 } from 'lucide-react'
 
 interface PropertiesViewProps {
@@ -72,21 +72,21 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
       : `${prop.street} ${prop.house_number || ''}, ${prop.city}`
 
     const amenities = [
-      prop.has_mamad ? '🛡️ ממ״ד' : null,
-      prop.has_elevator ? '🛗 מעלית' : null,
-      prop.has_balcony ? '🌅 מרפסת שמש' : null,
-      prop.has_storage ? '📦 מחסן' : null,
-      prop.parking_type !== 'none' ? `🚗 חניה (${prop.parking_legal === 'tabu' ? 'בטאבו' : 'משותפת'})` : null,
-    ].filter(Boolean).join(' | ')
+      prop.has_mamad ? 'ממ״ד' : null,
+      prop.has_elevator ? 'מעלית' : null,
+      prop.has_balcony ? 'מרפסת שמש' : null,
+      prop.has_storage ? 'מחסן' : null,
+      prop.parking_type !== 'none' ? `חניה (${prop.parking_legal === 'tabu' ? 'בטאבו' : 'משותפת'})` : null,
+    ].filter(Boolean).join(' • ')
 
-    const text = `🏡 *נכס חדש ובלעדי ${prop.transaction_type === 'sale' ? 'למכירה' : 'להשכרה'}!*
-📍 מיקום: ${addressStr}
-📐 פרטים: ${prop.rooms} חדרים | קומה ${prop.floor} מתוך ${prop.total_floors} | כ-${prop.sqm} מ״ר
-✨ יתרונות: ${amenities}
-💰 מחיר מבוקש: ${formatILS(prop.price)}${prop.transaction_type === 'rent' ? '/חודש' : ''}
-${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי מיידי / גמיש'}
+    const text = `נכס חדש ${prop.transaction_type === 'sale' ? 'למכירה' : 'להשכרה'}:
+מיקום: ${addressStr}
+פרטים: ${prop.rooms} חדרים | קומה ${prop.floor} מתוך ${prop.total_floors} | כ-${prop.sqm} מ״ר
+מאפיינים: ${amenities}
+מחיר מבוקש: ${formatILS(prop.price)}${prop.transaction_type === 'rent' ? '/חודש' : ''}
+${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מיידי / גמיש'}
 
-לפרטים נוספים ותיאום ביקור בנכס מוזמנים לחזור אליי בוואטסאפ!`
+לפרטים נוספים ותיאום ביקור בנכס מוזמנים ליצור קשר.`
 
     navigator.clipboard.writeText(text)
     setCopiedId(prop.id)
@@ -94,31 +94,31 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
   }
 
   return (
-    <div className="space-y-5 pb-24 md:pb-12">
+    <div className="space-y-4 pb-24 md:pb-12">
       {/* Top Controls: Search & Primary Filter Switcher */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Transaction Type Filter Tabs */}
-        <div className="flex rounded-xl bg-slate-900 p-1 border border-white/10 self-start">
+        <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200 self-start">
           <button
             onClick={() => setTxTypeFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              txTypeFilter === 'all' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              txTypeFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             כל הנכסים ({properties.length})
           </button>
           <button
             onClick={() => setTxTypeFilter('sale')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              txTypeFilter === 'sale' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              txTypeFilter === 'sale' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             מכירה ({properties.filter(p => p.transaction_type === 'sale').length})
           </button>
           <button
             onClick={() => setTxTypeFilter('rent')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              txTypeFilter === 'rent' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              txTypeFilter === 'rent' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             השכרה ({properties.filter(p => p.transaction_type === 'rent').length})
@@ -128,15 +128,15 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
         {/* Quick Ingest Button */}
         <button
           onClick={onOpenSmartPaste}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/40 transition-all active:scale-95"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>הדבקה וקליטה מוואטסאפ</span>
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>קליטה מהירה מוואטסאפ</span>
         </button>
       </div>
 
-      {/* Search Bar & Quick Amenities Filter Chips */}
-      <div className="glass-card rounded-2xl p-3.5 space-y-3">
+      {/* Search Bar & Clean Filter Chips */}
+      <div className="ui-panel rounded-xl p-3 space-y-2.5">
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
           <input
@@ -144,57 +144,59 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="חיפוש לפי רחוב, שכונה, עיר או הערות..."
-            className="w-full pl-4 pr-9 py-2 rounded-xl bg-slate-900/90 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full pl-3 pr-9 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:bg-white focus:outline-none focus:border-blue-600 transition-colors"
           />
         </div>
 
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        {/* Filter Chips - Clean & Minimal */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs">
           <span className="text-slate-400 text-[11px] font-medium flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> סינון:
+            <Filter className="w-3 h-3" /> סינון:
           </span>
           <button
             onClick={() => setFilterMamadOnly(!filterMamadOnly)}
-            className={`px-2.5 py-1 rounded-lg border transition-all ${
+            className={`px-2.5 py-1 rounded-md border text-xs transition-colors flex items-center gap-1 ${
               filterMamadOnly
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold'
-                : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'
+                ? 'bg-blue-50 text-blue-700 border-blue-300 font-semibold'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            🛡️ רק עם ממ״ד
+            <Shield className="w-3 h-3 text-slate-500" />
+            <span>ממ״ד בלבד</span>
           </button>
           <button
             onClick={() => setFilterParkingOnly(!filterParkingOnly)}
-            className={`px-2.5 py-1 rounded-lg border transition-all ${
+            className={`px-2.5 py-1 rounded-md border text-xs transition-colors flex items-center gap-1 ${
               filterParkingOnly
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold'
-                : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'
+                ? 'bg-blue-50 text-blue-700 border-blue-300 font-semibold'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            🚗 רק עם חניה
+            <Car className="w-3 h-3 text-slate-500" />
+            <span>חניה בלבד</span>
           </button>
           <button
             onClick={() => setFilterExclusiveOnly(!filterExclusiveOnly)}
-            className={`px-2.5 py-1 rounded-lg border transition-all ${
+            className={`px-2.5 py-1 rounded-md border text-xs transition-colors ${
               filterExclusiveOnly
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
-                : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'
+                ? 'bg-blue-50 text-blue-700 border-blue-300 font-semibold'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            ⭐ בלעדיות בלבד
+            בלעדיות בלבד
           </button>
         </div>
       </div>
 
       {/* Property Cards Grid */}
       {filtered.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center text-slate-400">
-          <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-base font-semibold text-white">לא נמצאו נכסים התואמים את הסינון</p>
-          <p className="text-xs mt-1">נסה לשנות את מונחי החיפוש או הדבק נכס חדש.</p>
+        <div className="ui-card rounded-xl p-10 text-center text-slate-500">
+          <Building2 className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+          <p className="text-sm font-medium text-slate-800">לא נמצאו נכסים התואמים את החיפוש</p>
+          <p className="text-xs mt-0.5 text-slate-500">נסה לשנות את מונחי החיפוש או הוסף נכס חדש.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {filtered.map(prop => {
             const matchCount = matchesMap[prop.id] || 0
             const hasPriceDrop = prop.price_history && prop.price_history.length > 1
@@ -202,73 +204,49 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
             return (
               <div
                 key={prop.id}
-                className="glass-card rounded-2xl overflow-hidden flex flex-col justify-between border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer group"
+                className="ui-card rounded-xl overflow-hidden flex flex-col justify-between cursor-pointer group"
                 onClick={() => onSelectProperty(prop)}
               >
                 <div>
                   {/* Photo Container */}
-                  <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
+                  <div className="relative h-44 w-full bg-slate-100 overflow-hidden border-b border-slate-100">
                     {prop.photos && prop.photos.length > 0 ? (
                       <img
                         src={prop.photos[0]}
                         alt={prop.street}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-200"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                        <Home className="w-10 h-10 mb-1" />
-                        <span className="text-[10px]">אין תמונות</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                        <Home className="w-8 h-8 mb-1" />
+                        <span className="text-xs">אין תמונות</span>
                       </div>
                     )}
 
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/40" />
-
-                    {/* Top Badges */}
-                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 flex-wrap">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white shadow-md ${
-                        prop.transaction_type === 'sale' ? 'bg-indigo-600' : 'bg-teal-600'
-                      }`}>
-                        {prop.transaction_type === 'sale' ? 'למכירה' : 'להשכרה'}
+                    {/* Clean Top Badges */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1.5 flex-wrap">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white bg-slate-900/80 backdrop-blur-xs">
+                        {prop.transaction_type === 'sale' ? 'מכירה' : 'השכרה'}
                       </span>
                       {prop.is_exclusive && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 shadow-md">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white">
                           בלעדיות
                         </span>
                       )}
                     </div>
 
-                    {/* Bottom Photo Overlay Info: Price */}
-                    <div className="absolute bottom-2.5 right-2.5 left-2.5 flex items-end justify-between">
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xl font-extrabold text-white tracking-tight drop-shadow-md">
-                            {formatILS(prop.price)}
-                          </span>
-                          {prop.transaction_type === 'rent' && (
-                            <span className="text-xs text-slate-300">/חודש</span>
-                          )}
-                        </div>
-
-                        {hasPriceDrop && (
-                          <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded-md border border-emerald-500/30 mt-0.5 w-fit">
-                            <TrendingDown className="w-3 h-3" />
-                            <span>ירידת מחיר!</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Anti-Poaching Indicator */}
+                    {/* Anti-Poaching Indicator on photo */}
+                    <div className="absolute bottom-2 left-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           onToggleAntiPoach(prop.id, prop.hide_exact_address)
                         }}
-                        className={`p-1.5 rounded-lg text-xs font-semibold backdrop-blur-md border transition-all ${
+                        className={`p-1.5 rounded-md text-xs font-semibold backdrop-blur-sm border transition-colors ${
                           prop.hide_exact_address
-                            ? 'bg-amber-500/30 border-amber-500/40 text-amber-300'
-                            : 'bg-slate-900/60 border-white/20 text-slate-300'
+                            ? 'bg-white/90 border-slate-300 text-amber-700'
+                            : 'bg-white/80 border-slate-200 text-slate-600'
                         }`}
                         title={prop.hide_exact_address ? 'כתובת מדויקת מוסתרת בדף שיתוף' : 'כתובת מלאה גלויה'}
                       >
@@ -278,39 +256,57 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
                   </div>
 
                   {/* Property Details Body */}
-                  <div className="p-4 space-y-3">
+                  <div className="p-3.5 space-y-2.5">
                     <div>
-                      <h4 className="text-sm font-bold text-white truncate">
-                        {prop.hide_exact_address ? (
-                          <span>{prop.street} (מס׳ מוסתר), {prop.neighborhood || prop.city}</span>
-                        ) : (
-                          <span>{prop.street} {prop.house_number || ''}, {prop.neighborhood || prop.city}</span>
+                      <div className="flex items-baseline justify-between gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 truncate">
+                          {prop.hide_exact_address ? (
+                            <span>{prop.street} (מס׳ מוסתר), {prop.neighborhood || prop.city}</span>
+                          ) : (
+                            <span>{prop.street} {prop.house_number || ''}, {prop.neighborhood || prop.city}</span>
+                          )}
+                        </h4>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-base font-bold text-slate-900">
+                          {formatILS(prop.price)}
+                        </span>
+                        {prop.transaction_type === 'rent' && (
+                          <span className="text-xs text-slate-500">/חודש</span>
                         )}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                        {hasPriceDrop && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                            <TrendingDown className="w-3 h-3" />
+                            <span>ירידת מחיר</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-slate-500 mt-1">
                         {prop.rooms} חדרים • קומה {prop.floor} מתוך {prop.total_floors} • {prop.sqm} מ״ר
                       </p>
                     </div>
 
-                    {/* Amenity Badges */}
-                    <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
+                    {/* Amenity Badges - Minimal Grayscale */}
+                    <div className="flex items-center gap-1 flex-wrap text-[11px]">
                       {prop.has_mamad && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
                           ממ״ד
                         </span>
                       )}
                       {prop.has_elevator && (
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
                           מעלית
                         </span>
                       )}
                       {prop.has_balcony && (
-                        <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
                           מרפסת
                         </span>
                       )}
                       {prop.parking_type !== 'none' && (
-                        <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-white/10 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
                           חניה ({prop.parking_legal === 'tabu' ? 'טאבו' : 'משותפת'})
                         </span>
                       )}
@@ -318,27 +314,27 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
 
                     {/* Matching Clients Pill */}
                     {matchCount > 0 && (
-                      <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-xs text-amber-300">
+                      <div className="p-2 rounded-lg bg-blue-50 border border-blue-200/80 flex items-center justify-between text-xs text-blue-700">
                         <span className="flex items-center gap-1 font-semibold">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          {matchCount} לקוחות מתאימים במערכת
+                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                          {matchCount} לקוחות מתאימים
                         </span>
-                        <span className="text-[10px] text-amber-400 underline">הצג</span>
+                        <span className="text-[11px] underline">הצג</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="p-3 border-t border-white/5 bg-slate-950/40 flex items-center justify-between gap-1.5">
+                <div className="p-2.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-1.5">
                   <div className="flex items-center gap-1">
                     {/* Copy WhatsApp Snippet */}
                     <button
                       onClick={(e) => handleCopyWhatsAppSnippet(e, prop)}
-                      className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 transition-colors"
+                      className="p-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors"
                       title="העתק טקסט מעוצב לוואטסאפ"
                     >
-                      {copiedId === prop.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedId === prop.id ? <Check className="w-3.5 h-3.5 text-blue-600" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
 
                     {/* Printable PDF Sheet */}
@@ -347,32 +343,31 @@ ${prop.vacancy_date ? `🔑 פינוי: ${prop.vacancy_date}` : '🔑 פינוי
                         e.stopPropagation()
                         onOpenPrintSheet(prop)
                       }}
-                      className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 transition-colors"
-                      title="דף נכס מעוצב להדפסה / PDF"
+                      className="p-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors"
+                      title="דף נכס להדפסה / PDF"
                     >
                       <Printer className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Public Mini-Page Link */}
+                    {/* Public Link */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         onOpenPublicPreview(prop)
                       }}
-                      className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 transition-colors"
+                      className="p-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors"
                       title="תצוגת דף נכס ללקוח"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Update Price button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       onUpdatePrice(prop)
                     }}
-                    className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-white/10 transition-colors"
+                    className="px-2.5 py-1 rounded-md bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 border border-slate-200 transition-colors"
                   >
                     עדכן מחיר
                   </button>

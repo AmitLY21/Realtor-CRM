@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Bell, Search, Plus, Wifi, WifiOff, Sparkles } from 'lucide-react'
-import { InAppNotification, getNotifications } from '../lib/notifications'
+import { Bell, Search, Plus, Wifi, WifiOff, Building2, ClipboardList, UserPlus } from 'lucide-react'
 
 interface HeaderProps {
   onOpenSearch: () => void
@@ -32,23 +31,20 @@ export const Header: React.FC<HeaderProps> = ({
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-xl px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-2.5 sm:px-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-cyan-500 to-indigo-600 shadow-lg shadow-emerald-500/20">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white shadow-xs">
+            <Building2 className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                Realtor<span className="text-emerald-400">CRM</span>
-              </h1>
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                PWA Pro
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 hidden sm:block">מערכת חכמה למתווכי נדל״ן</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-bold tracking-tight text-slate-900">
+              Realtor<span className="text-blue-600">CRM</span>
+            </h1>
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              PWA
+            </span>
           </div>
         </div>
 
@@ -57,33 +53,33 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Online/Offline Badge */}
           <div className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
             isOnline 
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
-              : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              ? 'bg-slate-50 border-slate-200 text-slate-600' 
+              : 'bg-amber-50 border-amber-200 text-amber-700'
           }`}>
-            {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-            <span>{isOnline ? 'מחובר ומסונכרן (0ms)' : 'מצב לא מקוון'}</span>
+            {isOnline ? <Wifi className="w-3.5 h-3.5 text-blue-600" /> : <WifiOff className="w-3.5 h-3.5 text-amber-600" />}
+            <span>{isOnline ? 'מחובר ומסונכרן' : 'מצב לא מקוון'}</span>
           </div>
 
           {/* Quick Search Button */}
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white hover:border-slate-700 transition-all text-xs"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors text-xs"
             title="חיפוש מהיר (Ctrl+K)"
           >
-            <Search className="w-4 h-4 text-slate-400" />
+            <Search className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden sm:inline">חיפוש נכס או לקוח...</span>
-            <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded border border-slate-700">⌘K</kbd>
+            <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] bg-white text-slate-500 rounded border border-slate-200">⌘K</kbd>
           </button>
 
           {/* Notifications Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative p-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            className="relative p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 transition-colors"
             title="מרכז התראות"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-md shadow-rose-500/30 animate-pulse">
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -93,35 +89,39 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowAddMenu(!showAddMenu)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-medium text-xs shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-xs transition-colors active:scale-98"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               <span>הוספה</span>
             </button>
 
             {showAddMenu && (
               <div 
-                className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-52 rounded-2xl bg-slate-900 border border-white/15 p-1.5 shadow-2xl shadow-black z-50 animate-in fade-in zoom-in-95 duration-100"
+                className="absolute left-0 sm:right-0 sm:left-auto mt-1.5 w-52 rounded-xl bg-white border border-slate-200 p-1 shadow-lg z-50 animate-in fade-in duration-100"
                 onClick={() => setShowAddMenu(false)}
               >
                 <button
                   onClick={onOpenSmartPaste}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-white hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors text-right"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-800 hover:bg-slate-50 transition-colors text-right"
                 >
-                  <span className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400">📋</span>
+                  <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <ClipboardList className="w-4 h-4" />
+                  </span>
                   <div>
-                    <p className="font-semibold">הדבקה מהירה (וואטסאפ)</p>
-                    <p className="text-[10px] text-slate-400">חילוץ אוטומטי של נכס</p>
+                    <p className="font-semibold text-slate-900">הדבקה מהירה (וואטסאפ)</p>
+                    <p className="text-[10px] text-slate-500">חילוץ אוטומטי של נכס</p>
                   </div>
                 </button>
                 <button
                   onClick={onOpenNewLead}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-white hover:bg-indigo-500/20 hover:text-indigo-300 transition-colors text-right"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-800 hover:bg-slate-50 transition-colors text-right"
                 >
-                  <span className="p-1 rounded-lg bg-indigo-500/20 text-indigo-400">👤</span>
+                  <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                    <UserPlus className="w-4 h-4" />
+                  </span>
                   <div>
-                    <p className="font-semibold">לקוח / ליד חדש</p>
-                    <p className="text-[10px] text-slate-400">הגדרת תקציב ודרישות</p>
+                    <p className="font-semibold text-slate-900">לקוח / ליד חדש</p>
+                    <p className="text-[10px] text-slate-500">הגדרת תקציב ודרישות</p>
                   </div>
                 </button>
               </div>

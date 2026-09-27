@@ -30,8 +30,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   return (
     <>
       {/* Desktop Sub-Header Navigation */}
-      <nav className="hidden md:block w-full border-b border-white/5 bg-slate-900/60 px-6 py-2">
-        <div className="max-w-7xl mx-auto flex items-center gap-1.5">
+      <nav className="hidden md:block w-full border-b border-slate-200 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex items-center gap-1">
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -39,16 +39,18 @@ export const Navigation: React.FC<NavigationProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all relative ${
+                className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold transition-colors relative border-b-2 ${
                   isActive
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-500'}`} />
                 <span>{tab.label}</span>
                 {tab.badge && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950">
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}>
                     {tab.badge}
                   </span>
                 )}
@@ -59,7 +61,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       </nav>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1.5 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1 pb-safe shadow-xs">
         <div className="flex items-center justify-around">
           {tabs.map((tab) => {
             const Icon = tab.icon
@@ -68,24 +70,21 @@ export const Navigation: React.FC<NavigationProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative ${
-                  isActive ? 'text-emerald-400' : 'text-slate-400 hover:text-slate-200'
+                className={`flex flex-col items-center justify-center py-1 px-3 rounded-lg transition-colors relative ${
+                  isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <div className="relative">
-                  <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  <Icon className="w-5 h-5" />
                   {tab.badge && (
-                    <span className="absolute -top-1 -right-2 flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold bg-amber-500 text-slate-950">
+                    <span className="absolute -top-1 -right-2 flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-[9px] font-bold bg-blue-600 text-white">
                       {tab.badge}
                     </span>
                   )}
                 </div>
-                <span className={`text-[10px] mt-1 font-medium ${isActive ? 'font-bold' : ''}`}>
+                <span className={`text-[10px] mt-0.5 ${isActive ? 'font-bold' : 'font-medium'}`}>
                   {tab.label}
                 </span>
-                {isActive && (
-                  <span className="absolute bottom-0 w-6 h-0.5 rounded-full bg-emerald-400" />
-                )}
               </button>
             )
           })}

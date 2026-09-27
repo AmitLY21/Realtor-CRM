@@ -5,7 +5,7 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     // Navigate to the app running on localhost:5174
     await page.goto('http://localhost:5174/')
     // Wait for Dexie seed data to initialize
-    await expect(page.locator('text=RealtorCRM')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('text=/Realtor[- ]?CRM/i')).toBeVisible({ timeout: 10000 })
   })
 
   test('1. App mounts with Hebrew RTL and displays Dashboard with Exclusivity Radar & Heskem Tivuch', async ({ page }) => {
@@ -88,7 +88,7 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('text=ליד חדש')).toBeVisible()
     await expect(page.locator('text=בירור צרכים')).toBeVisible()
     await expect(page.locator('text=סיורים בנכסים')).toBeVisible()
-    await expect(page.locator('text=עסקה נסגרה 🎉')).toBeVisible()
+    await expect(page.locator('text=עסקה נסגרה')).toBeVisible()
 
     // Advance first lead stage
     const nextStageBtn = page.locator('button:has-text("השלב הבא")').first()
