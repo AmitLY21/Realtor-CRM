@@ -141,3 +141,31 @@ export const STAGE_CONFIG: { id: LeadStage; title: string; color: string }[] = [
   { id: 'signing', title: 'עו״ד וחתימה', color: 'bg-cyan-500' },
   { id: 'closed_won', title: 'עסקה נסגרה', color: 'bg-emerald-500' },
 ]
+
+export interface InAppNotification {
+  id: string
+  title: string
+  body: string
+  type: 'match' | 'exclusivity' | 'showing' | 'price_drop' | 'system'
+  timestamp: string
+  read: boolean
+  actionUrl?: string
+}
+
+export interface MatchMatrixResult {
+  allMatches: MatchScore[]
+  hotMatches: MatchScore[]
+  propMatchesMap: Record<string, number>
+  leadMatchesMap: Record<string, number>
+}
+
+export type ActiveModal =
+  | { type: 'smart_paste' }
+  | { type: 'new_lead' }
+  | { type: 'search' }
+  | { type: 'notifications' }
+  | { type: 'price_update'; property: Property }
+  | { type: 'public_preview'; property: Property; isPrintMode: boolean }
+  | { type: 'onboarding_tour' }
+  | null
+

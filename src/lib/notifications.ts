@@ -1,19 +1,13 @@
 /**
  * Notification Service & Audio Chimes
- * Provides Web Push integration, In-App Notification Center, and synthesized sound chimes.
+ * Provides Web Push integration, IndexedDB In-App Notification Center, and synthesized sound chimes.
  */
+import { db } from './db'
+import { InAppNotification } from '../types'
 
-export interface InAppNotification {
-  id: string
-  title: string
-  body: string
-  type: 'match' | 'exclusivity' | 'showing' | 'price_drop' | 'system'
-  timestamp: string
-  read: boolean
-  actionUrl?: string
-}
+export type { InAppNotification }
 
-// Global In-Memory Notification Store with LocalStorage backup
+// LocalStorage backup for offline fallback
 const STORAGE_KEY = 'realtor_in_app_notifications'
 
 export function getNotifications(): InAppNotification[] {
@@ -26,7 +20,11 @@ export function getNotifications(): InAppNotification[] {
 }
 
 export function saveNotifications(notifs: InAppNotification[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notifs.slice(0, 50))) // Keep latest 50
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifs.slice(0, 50)))
+  } catch {
+    // Ignore quota errors
+  }
 }
 
 /**
@@ -71,22 +69,36 @@ export function playNotificationChime(type: 'success' | 'alert' | 'match' = 'mat
 }
 
 /**
- * Push Notification Dispatcher (Browser Notification API)
+ * Push Notification Dispatcher (Browser Notification API & IndexedDB)
  */
-export async function sendPushNotification(title: string, body: string, type: InAppNotification['type'] = 'match') {
+export async function sendPushNotification(
+  title: string, 
+  body: string, 
+  type: InAppNotification['type'] = 'match',
+  actionUrl?: string
+) {
   // 1. Play subtle audio chime
   playNotificationChime(type === 'showing' ? 'alert' : 'match')
 
-  // 2. Save to In-App Notification Center
-  const current = getNotifications()
+  // 2. Persist to Dexie IndexedDB
   const newNotif: InAppNotification = {
     id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     title,
     body,
     type,
     timestamp: new Date().toISOString(),
-    read: false
+    read: false,
+    actionUrl
   }
+
+  try {
+    await db.notifications.put(newNotif)
+  } catch (err) {
+    console.warn('Failed saving notification to IndexedDB, using fallback:', err)
+  }
+
+  // Backup in localStorage
+  const current = getNotifications()
   saveNotifications([newNotif, ...current])
 
   // 3. Dispatch system notification if permitted
@@ -115,4 +127,14 @@ export async function sendPushNotification(title: string, body: string, type: In
       console.warn('System push notification failed:', e)
     }
   }
+}
+
+export async function markAllNotificationsAsRead(): Promise<void> {
+  try {
+    await db.notifications.toCollection().modify({ read: true })
+  } catch (err) {
+    console.warn('Failed marking notifications as read in IndexedDB:', err)
+  }
+  const current = getNotifications().map(n => ({ ...n, read: true }))
+  saveNotifications(current)
 }

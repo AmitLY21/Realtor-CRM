@@ -1,11 +1,12 @@
 import Dexie, { type Table } from 'dexie'
-import { Property, Lead, Reminder, AgentProfile, PriceHistoryEntry } from '../types'
+import { Property, Lead, Reminder, AgentProfile, PriceHistoryEntry, InAppNotification } from '../types'
 
 export class RealtorDatabase extends Dexie {
   properties!: Table<Property, string>
   leads!: Table<Lead, string>
   reminders!: Table<Reminder, string>
   settings!: Table<{ key: string; value: any }, string>
+  notifications!: Table<InAppNotification, string>
 
   constructor() {
     super('RealtorCRM_DB')
@@ -14,6 +15,9 @@ export class RealtorDatabase extends Dexie {
       leads: 'id, phone, stage, transaction_type, max_budget, created_at, updated_at',
       reminders: 'id, lead_id, property_id, reminder_type, scheduled_time, is_completed, created_at',
       settings: 'key'
+    })
+    this.version(2).stores({
+      notifications: 'id, type, timestamp, read'
     })
   }
 }
@@ -362,6 +366,7 @@ export async function exportFullDatabase(): Promise<string> {
   const leads = await db.leads.toArray()
   const reminders = await db.reminders.toArray()
   const settings = await db.settings.toArray()
+  const notifications = await db.notifications.toArray()
 
   const data = {
     exported_at: new Date().toISOString(),
@@ -369,7 +374,8 @@ export async function exportFullDatabase(): Promise<string> {
     properties,
     leads,
     reminders,
-    settings
+    settings,
+    notifications
   }
   return JSON.stringify(data, null, 2)
 }
@@ -379,6 +385,7 @@ export async function clearAllDataToCleanSlate(): Promise<void> {
   await db.properties.clear()
   await db.leads.clear()
   await db.reminders.clear()
+  await db.notifications.clear()
   if (typeof window !== 'undefined') {
     localStorage.setItem('realtor_crm_clean_slate', 'true')
   }
