@@ -135,6 +135,14 @@ export function App() {
     await db.leads.update(leadId, { stage: newStage, updated_at: new Date().toISOString() })
   }
 
+  const handleDeleteLead = async (leadId: string) => {
+    await db.leads.delete(leadId)
+  }
+
+  const handleUpdateLeadNotes = async (leadId: string, notes: string) => {
+    await db.leads.update(leadId, { notes, updated_at: new Date().toISOString() })
+  }
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-800">
@@ -214,6 +222,8 @@ export function App() {
               setActiveTab('matches')
             }}
             onUpdateLeadStage={handleUpdateLeadStage}
+            onDeleteLead={handleDeleteLead}
+            onUpdateLeadNotes={handleUpdateLeadNotes}
             leadMatchesMap={leadMatchesMap}
           />
         )}

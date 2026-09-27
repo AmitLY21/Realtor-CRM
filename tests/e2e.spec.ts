@@ -143,4 +143,44 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await page.fill('input[placeholder*="חפש לפי כתובת"]', 'בוגרשוב')
     await expect(page.locator('text=נכסים (').first()).toBeVisible()
   })
+
+  test('8. Kanban advanced controls: Stage revert, direct jump, archive and delete', async ({ page }) => {
+    // Navigate to Leads view
+    await page.click('button:has-text("לקוחות ומשפך")')
+    await expect(page.locator('text=כל הלקוחות')).toBeVisible()
+
+    // Test stage revert (button:has-text("הקודם"))
+    const prevBtn = page.locator('button:has-text("הקודם")').first()
+    if (await prevBtn.isVisible()) {
+      await prevBtn.click()
+    }
+
+    // Open context menu on first card
+    const menuBtn = page.locator('button[title="אפשרויות נוספות"]').first()
+    await menuBtn.click()
+
+    // Verify stage jump menu appears
+    await expect(page.locator('text=קפוץ ישירות לשלב:')).toBeVisible()
+
+    // Jump to "עסקה נסגרה" to trigger celebration
+    await page.click('button:has-text("עסקה נסגרה")')
+
+    // Open menu again and test archive
+    const menuBtn2 = page.locator('button[title="אפשרויות נוספות"]').first()
+    await menuBtn2.click()
+    await page.click('text=העבר לארכיון (נפלה)')
+
+    // Verify archive button appears
+    await expect(page.locator('button:has-text("ארכיון שנפלו")')).toBeVisible()
+
+    // Switch to table view and verify delete modal
+    await page.click('button:has-text("טבלה")')
+    const deleteBtn = page.locator('button[title="מחק"]').first()
+    await deleteBtn.click()
+
+    await expect(page.locator('text=מחיקת לקוח לצמיתות')).toBeVisible()
+    await page.click('button:has-text("ביטול")')
+    await expect(page.locator('text=מחיקת לקוח לצמיתות')).not.toBeVisible()
+  })
 })
+
