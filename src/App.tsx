@@ -6,15 +6,13 @@ import {
   DEFAULT_AGENT_PROFILE, 
   updatePropertyPrice 
 } from './lib/db'
-import { calculateMatchScore } from './lib/matchingEngine'
+import { calculateMatchMatrix } from './lib/matchingEngine'
 import { 
-  getNotifications, 
-  saveNotifications, 
   sendPushNotification, 
-  InAppNotification 
+  markAllNotificationsAsRead 
 } from './lib/notifications'
 import { ensureStoragePersistence } from './lib/imageCompressor'
-import { Property, Lead, Reminder, AgentProfile, MatchScore } from './types'
+import { Property, Lead, Reminder, AgentProfile, InAppNotification, ActiveModal } from './types'
 
 // Components
 import { Header } from './components/Header'
@@ -35,23 +33,17 @@ import { OnboardingTourModal } from './components/OnboardingTourModal'
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
   const [isInitialized, setIsInitialized] = useState(false)
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null)
 
-  // Modals state
-  const [isSmartPasteOpen, setIsSmartPasteOpen] = useState(false)
-  const [isNewLeadOpen, setIsNewLeadOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const [publicPreviewProp, setPublicPreviewProp] = useState<Property | null>(null)
-  const [isPrintMode, setIsPrintMode] = useState(false)
-  const [priceUpdateProp, setPriceUpdateProp] = useState<Property | null>(null)
-  const [isOnboardingTourOpen, setIsOnboardingTourOpen] = useState(false)
-
-  // Notifications
-  const [notifications, setNotifications] = useState<InAppNotification[]>([])
-
+  // Live queries from Dexie
   const properties = useLiveQuery(() => db.properties.toArray(), [], [] as Property[])
   const leads = useLiveQuery(() => db.leads.toArray(), [], [] as Lead[])
   const reminders = useLiveQuery(() => db.reminders.toArray(), [], [] as Reminder[])
+  const notifications = useLiveQuery(
+    () => db.notifications.orderBy('timestamp').reverse().toArray(),
+    [],
+    [] as InAppNotification[]
+  )
   const profileSetting = useLiveQuery(() => db.settings.get('agent_profile'), [], undefined)
   const agentProfile: AgentProfile = profileSetting?.value || DEFAULT_AGENT_PROFILE
 
@@ -60,62 +52,35 @@ export function App() {
     async function init() {
       await seedInitialDataIfEmpty()
       await ensureStoragePersistence()
-      setNotifications(getNotifications())
       setIsInitialized(true)
 
       // First-time onboarding tour auto-launch
       const hasSeenTour = typeof window !== 'undefined' && localStorage.getItem('realtor_crm_onboarded') === 'true'
       if (!hasSeenTour) {
-        setIsOnboardingTourOpen(true)
+        setActiveModal({ type: 'onboarding_tour' })
       }
 
       // Handle Web Share Target API query params (e.g. /?share=1&text=...)
       const params = new URLSearchParams(window.location.search)
       if (params.get('share') || params.get('text')) {
-        setIsSmartPasteOpen(true)
+        setActiveModal({ type: 'smart_paste' })
       }
     }
     init()
   }, [])
 
-  // Calculate Real-Time Matches Matrix
-  const { allMatches, hotMatches, propMatchesMap, leadMatchesMap } = useMemo(() => {
-    const matches: MatchScore[] = []
-    const propMap: Record<string, number> = {}
-    const leadMap: Record<string, number> = {}
-
-    for (const prop of properties) {
-      if (prop.status !== 'active') continue
-      for (const lead of leads) {
-        if (lead.stage === 'closed_lost') continue
-        const result = calculateMatchScore(prop, lead)
-        if (!result.isDisqualified && result.score >= 50) {
-          matches.push(result)
-          if (result.score >= 70) {
-            propMap[prop.id] = (propMap[prop.id] || 0) + 1
-            leadMap[lead.id] = (leadMap[lead.id] || 0) + 1
-          }
-        }
-      }
-    }
-
-    const hot = matches.filter(m => m.score >= 85)
-    return {
-      allMatches: matches,
-      hotMatches: hot,
-      propMatchesMap: propMap,
-      leadMatchesMap: leadMap
-    }
-  }, [properties, leads])
+  // Calculate Real-Time Matches Matrix via deep module
+  const { allMatches, hotMatches, propMatchesMap, leadMatchesMap } = useMemo(
+    () => calculateMatchMatrix(properties, leads),
+    [properties, leads]
+  )
 
   // Unread notification count
   const unreadCount = notifications.filter(n => !n.read).length
 
   // Handlers
-  const handleMarkAllNotificationsRead = () => {
-    const updated = notifications.map(n => ({ ...n, read: true }))
-    setNotifications(updated)
-    saveNotifications(updated)
+  const handleMarkAllNotificationsRead = async () => {
+    await markAllNotificationsAsRead()
   }
 
   const handleToggleAntiPoach = async (propertyId: string, currentVal: boolean) => {
@@ -126,7 +91,6 @@ export function App() {
     const updated = await updatePropertyPrice(propertyId, newPrice, note)
     if (updated) {
       await sendPushNotification('ירידת מחיר עודכנה!', `${updated.street}: המחיר עודכן ל-${newPrice.toLocaleString()} ₪`, 'price_drop')
-      setNotifications(getNotifications())
     }
   }
 
@@ -163,10 +127,10 @@ export function App() {
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       {/* Top App Header */}
       <Header
-        onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenSmartPaste={() => setIsSmartPasteOpen(true)}
-        onOpenNewLead={() => setIsNewLeadOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        onOpenSearch={() => setActiveModal({ type: 'search' })}
+        onOpenSmartPaste={() => setActiveModal({ type: 'smart_paste' })}
+        onOpenNewLead={() => setActiveModal({ type: 'new_lead' })}
+        onOpenNotifications={() => setActiveModal({ type: 'notifications' })}
         unreadCount={unreadCount}
       />
 
@@ -186,8 +150,7 @@ export function App() {
             reminders={reminders}
             hotMatches={hotMatches}
             onSelectProperty={(prop) => {
-              setPublicPreviewProp(prop)
-              setIsPrintMode(false)
+              setActiveModal({ type: 'public_preview', property: prop, isPrintMode: false })
             }}
             onSelectLead={(_lead) => {
               setActiveTab('leads')
@@ -195,29 +158,26 @@ export function App() {
             onUpdateReminderStatus={handleUpdateReminderStatus}
             onUpdateHeskemStatus={handleUpdateHeskemStatus}
             onNavigateToMatches={() => setActiveTab('matches')}
-            onOpenSmartPaste={() => setIsSmartPasteOpen(true)}
-            onOpenNewLead={() => setIsNewLeadOpen(true)}
+            onOpenSmartPaste={() => setActiveModal({ type: 'smart_paste' })}
+            onOpenNewLead={() => setActiveModal({ type: 'new_lead' })}
           />
         )}
 
         {activeTab === 'properties' && (
           <PropertiesView
             properties={properties}
-            onOpenSmartPaste={() => setIsSmartPasteOpen(true)}
+            onOpenSmartPaste={() => setActiveModal({ type: 'smart_paste' })}
             onSelectProperty={(prop) => {
-              setPublicPreviewProp(prop)
-              setIsPrintMode(false)
+              setActiveModal({ type: 'public_preview', property: prop, isPrintMode: false })
             }}
             onOpenPublicPreview={(prop) => {
-              setPublicPreviewProp(prop)
-              setIsPrintMode(false)
+              setActiveModal({ type: 'public_preview', property: prop, isPrintMode: false })
             }}
             onOpenPrintSheet={(prop) => {
-              setPublicPreviewProp(prop)
-              setIsPrintMode(true)
+              setActiveModal({ type: 'public_preview', property: prop, isPrintMode: true })
             }}
             onToggleAntiPoach={handleToggleAntiPoach}
-            onUpdatePrice={(prop) => setPriceUpdateProp(prop)}
+            onUpdatePrice={(prop) => setActiveModal({ type: 'price_update', property: prop })}
             matchesMap={propMatchesMap}
           />
         )}
@@ -225,9 +185,8 @@ export function App() {
         {activeTab === 'leads' && (
           <LeadsView
             leads={leads}
-            onOpenNewLead={() => setIsNewLeadOpen(true)}
+            onOpenNewLead={() => setActiveModal({ type: 'new_lead' })}
             onSelectLead={(_lead) => {
-              // Switch to matches filtered for this lead
               setActiveTab('matches')
             }}
             onUpdateLeadStage={handleUpdateLeadStage}
@@ -241,8 +200,7 @@ export function App() {
           <MatchesView
             matches={allMatches}
             onSelectProperty={(prop) => {
-              setPublicPreviewProp(prop)
-              setIsPrintMode(false)
+              setActiveModal({ type: 'public_preview', property: prop, isPrintMode: false })
             }}
             onSelectLead={(_lead) => {
               setActiveTab('leads')
@@ -257,51 +215,50 @@ export function App() {
             onUpdateAgentProfile={async (newProfile) => {
               await db.settings.put({ key: 'agent_profile', value: newProfile })
             }}
-            onOpenOnboardingTour={() => setIsOnboardingTourOpen(true)}
+            onOpenOnboardingTour={() => setActiveModal({ type: 'onboarding_tour' })}
           />
         )}
       </main>
 
       {/* Modals & Drawers */}
       <SmartPasteModal
-        isOpen={isSmartPasteOpen}
-        onClose={() => setIsSmartPasteOpen(false)}
+        isOpen={activeModal?.type === 'smart_paste'}
+        onClose={() => setActiveModal(null)}
         onPropertyAdded={(_newProp) => {
           setActiveTab('properties')
         }}
       />
 
       <NewLeadModal
-        isOpen={isNewLeadOpen}
-        onClose={() => setIsNewLeadOpen(false)}
+        isOpen={activeModal?.type === 'new_lead'}
+        onClose={() => setActiveModal(null)}
         onLeadAdded={(_newLead) => {
           setActiveTab('leads')
         }}
       />
 
       <PropertyPublicView
-        property={publicPreviewProp}
+        property={activeModal?.type === 'public_preview' ? activeModal.property : null}
         agent={agentProfile}
-        isOpen={!!publicPreviewProp}
-        onClose={() => setPublicPreviewProp(null)}
-        isPrintMode={isPrintMode}
+        isOpen={activeModal?.type === 'public_preview'}
+        onClose={() => setActiveModal(null)}
+        isPrintMode={activeModal?.type === 'public_preview' ? activeModal.isPrintMode : false}
       />
 
       <PriceUpdateModal
-        property={priceUpdateProp}
-        isOpen={!!priceUpdateProp}
-        onClose={() => setPriceUpdateProp(null)}
+        property={activeModal?.type === 'price_update' ? activeModal.property : null}
+        isOpen={activeModal?.type === 'price_update'}
+        onClose={() => setActiveModal(null)}
         onPriceUpdated={handlePriceUpdate}
       />
 
       <GlobalSearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        isOpen={activeModal?.type === 'search'}
+        onClose={() => setActiveModal(null)}
         properties={properties}
         leads={leads}
         onSelectProperty={(prop) => {
-          setPublicPreviewProp(prop)
-          setIsPrintMode(false)
+          setActiveModal({ type: 'public_preview', property: prop, isPrintMode: false })
         }}
         onSelectLead={() => {
           setActiveTab('leads')
@@ -309,24 +266,23 @@ export function App() {
       />
 
       <NotificationCenter
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
+        isOpen={activeModal?.type === 'notifications'}
+        onClose={() => setActiveModal(null)}
         notifications={notifications}
         onMarkAllAsRead={handleMarkAllNotificationsRead}
       />
 
       <OnboardingTourModal
-        isOpen={isOnboardingTourOpen}
+        isOpen={activeModal?.type === 'onboarding_tour'}
         onClose={() => {
           localStorage.setItem('realtor_crm_onboarded', 'true')
-          setIsOnboardingTourOpen(false)
+          setActiveModal(null)
         }}
         initialProfile={agentProfile}
         onComplete={async (newProfile) => {
           await db.settings.put({ key: 'agent_profile', value: newProfile })
           localStorage.setItem('realtor_crm_onboarded', 'true')
           await sendPushNotification('ברוך הבא ל-Realtor CRM!', `פרופיל המתווך של ${newProfile.name} הוגדר בהצלחה.`, 'match')
-          setNotifications(getNotifications())
         }}
       />
     </div>
@@ -334,3 +290,4 @@ export function App() {
 }
 
 export default App
+
