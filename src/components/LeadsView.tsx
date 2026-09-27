@@ -1,22 +1,18 @@
 import React, { useState } from 'react'
 import confetti from 'canvas-confetti'
-import { Lead, LeadStage, TransactionType } from '../types'
-import { formatILS, formatPhone } from '../lib/utils'
+import { Lead, LeadStage, TransactionType, STAGE_CONFIG } from '../types'
+import { formatILS, formatPhone, getDaysSince } from '../lib/utils'
 import { playNotificationChime } from '../lib/notifications'
 import { 
-  Users, 
   Search, 
   Plus, 
   Kanban, 
   Table as TableIcon, 
   Phone, 
   MessageSquare, 
-  Calendar, 
   Sparkles, 
-  CheckCircle2, 
   ArrowLeft,
   ArrowRight,
-  DollarSign,
   MapPin,
   Trash2,
   Archive,
@@ -24,9 +20,7 @@ import {
   Clock,
   Edit3,
   Check,
-  X,
   RotateCcw,
-  Send,
   AlertTriangle
 } from 'lucide-react'
 
@@ -39,15 +33,6 @@ interface LeadsViewProps {
   onUpdateLeadNotes?: (leadId: string, notes: string) => void
   leadMatchesMap: Record<string, number> // leadId -> count of matching properties
 }
-
-export const STAGE_CONFIG: { id: LeadStage; title: string; color: string }[] = [
-  { id: 'new_lead', title: 'ליד חדש', color: 'bg-blue-500' },
-  { id: 'discovery', title: 'בירור צרכים', color: 'bg-indigo-500' },
-  { id: 'viewings', title: 'סיורים בנכסים', color: 'bg-purple-500' },
-  { id: 'negotiation', title: 'משא ומתן', color: 'bg-amber-500' },
-  { id: 'signing', title: 'עו״ד וחתימה', color: 'bg-cyan-500' },
-  { id: 'closed_won', title: 'עסקה נסגרה', color: 'bg-emerald-500' },
-]
 
 export const LeadsView: React.FC<LeadsViewProps> = ({
   leads,
@@ -210,9 +195,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
   // Inactivity calculator
   const getInactivityDays = (lead: Lead): number => {
-    const dateStr = lead.updated_at || lead.created_at
-    const diff = Date.now() - new Date(dateStr).getTime()
-    return Math.floor(diff / (1000 * 60 * 60 * 24))
+    return getDaysSince(lead.updated_at || lead.created_at)
   }
 
   const archivedLeadsCount = leads.filter(l => l.stage === 'closed_lost').length

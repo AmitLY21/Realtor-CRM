@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { parseRawListingText, ParsedPropertyDraft } from '../lib/parser'
 import { checkPropertyDuplicate, db } from '../lib/db'
 import { Property } from '../types'
@@ -38,16 +38,16 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   const [formSqm, setFormSqm] = useState<string>('')
   const [formNeighborhood, setFormNeighborhood] = useState('')
 
-  // Reactively parse as user types or pastes
-  useEffect(() => {
-    if (!rawText.trim()) {
+  const handleRawTextChange = (text: string) => {
+    setRawText(text)
+    if (!text.trim()) {
       setDraft(null)
       setDuplicateWarning(null)
       setValidationError(null)
       return
     }
 
-    const parsed = parseRawListingText(rawText)
+    const parsed = parseRawListingText(text)
     setDraft(parsed)
     setValidationError(null)
 
@@ -68,7 +68,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         setDuplicateWarning(dup || null)
       })
     }
-  }, [rawText])
+  }
 
   if (!isOpen) return null
 
@@ -90,7 +90,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 משופצת אדריכלית, פינוי גמיש.
 מחיר מבוקש: 4,650,000 ש"ח (לרציניים בלבד).
 לפרטים ותיאום: רונן 054-1234567`
-    setRawText(sample)
+    handleRawTextChange(sample)
   }
 
   const handleSave = async () => {
@@ -207,7 +207,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             </div>
             <textarea
               value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
+              onChange={(e) => handleRawTextChange(e.target.value)}
               placeholder="לדוגמה: למכירה בבוגרשוב 52, 3.5 חדרים קומה 3 עם מעלית וממ״ד, חניה בטאבו 4.65M ש״ח..."
               rows={3}
               className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:bg-white focus:outline-none focus:border-blue-600 transition-colors resize-none leading-relaxed"

@@ -235,6 +235,24 @@ export const NewLeadModal: React.FC<NewLeadModalProps> = ({
                 className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-600 focus:outline-none"
               />
             </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                מקור הליד:
+              </label>
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value as any)}
+                className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-600 focus:outline-none"
+              >
+                <option value="whatsapp">וואטסאפ (WhatsApp)</option>
+                <option value="yad2">יד 2 (Yad2)</option>
+                <option value="phone_call">שיחה טלפונית</option>
+                <option value="referral">הפניה אישית</option>
+                <option value="direct">פנייה ישירה / שלט</option>
+                <option value="messenger">רשתות חברתיות</option>
+              </select>
+            </div>
           </div>
 
           {/* Budget & Rooms */}

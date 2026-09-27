@@ -255,9 +255,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => lead && onSelectLead(lead)}
+                          className={`text-sm font-bold text-slate-900 ${lead ? 'hover:text-blue-600 hover:underline cursor-pointer' : ''}`}
+                        >
                           {lead ? lead.full_name : 'לקוח לסיור'}
-                        </span>
+                        </button>
                         {property && (
                           <span className="text-xs text-slate-500 font-medium">
                             • {property.street} {property.house_number}, {property.city}

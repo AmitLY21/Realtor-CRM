@@ -1,18 +1,15 @@
 import React, { useState } from 'react'
-import { MatchScore, TransactionType } from '../types'
+import { MatchScore, TransactionType, Property, Lead } from '../types'
 import { formatILS } from '../lib/utils'
 import { 
   Sparkles, 
-  MessageSquare, 
-  Building2, 
-  Users, 
-  ArrowLeft
+  MessageSquare
 } from 'lucide-react'
 
 interface MatchesViewProps {
   matches: MatchScore[]
-  onSelectProperty: (property: any) => void
-  onSelectLead: (lead: any) => void
+  onSelectProperty: (property: Property) => void
+  onSelectLead: (lead: Lead) => void
 }
 
 export const MatchesView: React.FC<MatchesViewProps> = ({
@@ -65,38 +62,75 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
           </div>
         </div>
 
-        {/* Score Threshold */}
-        <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200 text-xs self-start sm:self-auto">
-          <button
-            onClick={() => setMinScoreFilter(85)}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
-              minScoreFilter === 85 
-                ? 'bg-white text-slate-900 shadow-xs' 
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            התאמות חמות (85%+)
-          </button>
-          <button
-            onClick={() => setMinScoreFilter(70)}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              minScoreFilter === 70 
-                ? 'bg-white text-slate-900 shadow-xs' 
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            פוטנציאל (70%+)
-          </button>
-          <button
-            onClick={() => setMinScoreFilter(50)}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              minScoreFilter === 50 
-                ? 'bg-white text-slate-900 shadow-xs' 
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            הכל (50%+)
-          </button>
+        {/* Filter Controls: Score Threshold & Transaction Type */}
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          {/* Transaction Type Filter */}
+          <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200 text-xs">
+            <button
+              onClick={() => setTxFilter('all')}
+              className={`px-2.5 py-1.5 rounded-md font-semibold transition-all ${
+                txFilter === 'all'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              הכל
+            </button>
+            <button
+              onClick={() => setTxFilter('sale')}
+              className={`px-2.5 py-1.5 rounded-md font-semibold transition-all ${
+                txFilter === 'sale'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              מכירה
+            </button>
+            <button
+              onClick={() => setTxFilter('rent')}
+              className={`px-2.5 py-1.5 rounded-md font-semibold transition-all ${
+                txFilter === 'rent'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              השכרה
+            </button>
+          </div>
+
+          {/* Score Threshold */}
+          <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200 text-xs">
+            <button
+              onClick={() => setMinScoreFilter(85)}
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
+                minScoreFilter === 85 
+                  ? 'bg-white text-slate-900 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              התאמות חמות (85%+)
+            </button>
+            <button
+              onClick={() => setMinScoreFilter(70)}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                minScoreFilter === 70 
+                  ? 'bg-white text-slate-900 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              פוטנציאל (70%+)
+            </button>
+            <button
+              onClick={() => setMinScoreFilter(50)}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                minScoreFilter === 50 
+                  ? 'bg-white text-slate-900 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              הכל (50%+)
+            </button>
+          </div>
         </div>
       </div>
 
@@ -128,11 +162,21 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
 
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-slate-900">{lead.full_name}</span>
+                        <button
+                          type="button"
+                          onClick={() => onSelectLead(lead)}
+                          className="text-sm font-bold text-slate-900 hover:text-blue-600 hover:underline cursor-pointer"
+                        >
+                          {lead.full_name}
+                        </button>
                         <span className="text-slate-400">⟵ מול ⟶</span>
-                        <span className="text-sm font-bold text-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => onSelectProperty(prop)}
+                          className="text-sm font-bold text-slate-900 hover:text-blue-600 hover:underline cursor-pointer text-right"
+                        >
                           {prop.street} {prop.house_number || ''}, {prop.neighborhood || prop.city}
-                        </span>
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">

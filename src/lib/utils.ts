@@ -28,3 +28,11 @@ export function normalizePhone(phone: string): string {
   }
   return digits
 }
+
+export function getDaysSince(dateStr?: string): number {
+  if (!dateStr) return 0
+  const target = new Date(dateStr).getTime()
+  if (isNaN(target)) return 0
+  const diff = Date.now() - target
+  return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)))
+}

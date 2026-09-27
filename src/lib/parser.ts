@@ -1,4 +1,4 @@
-import { Property, Lead, ParkingType, ParkingLegal, PropertyType, TransactionType } from '../types'
+import { ParkingType, ParkingLegal, PropertyType, TransactionType } from '../types'
 import { ISRAELI_STREET_REGISTRY, ISRAELI_CITY_ABBREVIATIONS, lookupNeighborhoodByStreet } from './geoRegistry'
 
 export interface ParsedPropertyDraft {
@@ -32,7 +32,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
   // 0. Pre-clean WhatsApp headers, timestamps, and invisible characters
   let text = rawText
     .replace(/^\[\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?\]\s*/i, '')
-    .replace(/^\[\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4},?\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*(?:AM|PM))?\]\s*/i, '')
+    .replace(/^\[\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4},?\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*(?:AM|PM))?\]\s*/i, '')
     .replace(/^[\u200B-\u200D\uFEFF]/, '')
     .trim()
 
@@ -49,7 +49,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
   let priceFoundType: 'sale' | 'rent' | undefined
 
   // Pattern A: Broker slang "שיווק 3490" or "מחיר שיווק 4100" (numbers 1000..9999 represent thousands of thousands = millions)
-  const shivukMatch = text.match(/(?:שיווק|מחיר שיווק|מחיר יעד)\s*[:=\-]?\s*(\d{1,3}(?:,\d{3})+|\d{3,5}(?:\.\d+)?(?:\s*[Mmמ])?)/i)
+  const shivukMatch = text.match(/(?:שיווק|מחיר שיווק|מחיר יעד)\s*[:=-]?\s*(\d{1,3}(?:,\d{3})+|\d{3,5}(?:\.\d+)?(?:\s*[Mmמ])?)/i)
   if (shivukMatch) {
     const rawNum = shivukMatch[1].replace(/,/g, '')
     if (/^\d{4}$/.test(rawNum)) {
@@ -76,7 +76,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
 
   // Pattern B: Explicit "מחיר מבוקש 3,730,000 ש"ח" or "מחיר: 3,730,000"
   if (!price) {
-    const mevakashMatch = text.match(/(?:מחיר מבוקש|מחיר|מבוקש)\s*[:=\-]?\s*(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{5,9})\s*(?:ש"ח|שח|₪)?/i)
+    const mevakashMatch = text.match(/(?:מחיר מבוקש|מחיר|מבוקש)\s*[:=-]?\s*(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{5,9})\s*(?:ש"ח|שח|₪)?/i)
     if (mevakashMatch) {
       const val = parseInt(mevakashMatch[1].replace(/,/g, ''), 10)
       price = val
@@ -204,7 +204,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
 
   // 7. Square Meters (מ״ר)
   let sqm: number | undefined
-  const builtSqmMatch = text.match(/(?:בנוי|שטח|ארנונה)\s*[:=\-]?\s*(\d{2,4})\s*(?:מ"ר|מר|מ״ר|מטר|sqm)/i)
+  const builtSqmMatch = text.match(/(?:בנוי|שטח|ארנונה)\s*[:=-]?\s*(\d{2,4})\s*(?:מ"ר|מר|מ״ר|מטר|sqm)/i)
   if (builtSqmMatch) {
     sqm = parseInt(builtSqmMatch[1], 10)
     extractedFields.push(`${sqm} מ״ר (בנוי)`)
@@ -324,7 +324,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
 
   // Step 5: Explicit "ברחוב X" or "רחוב X 20"
   if (!street) {
-    const streetPrefixMatch = text.match(/(?:ברחוב|רחוב|ב?שד(?:רות)?)\s+([א-ת\s'״"-]{2,20}?)(?:\s+(\d{1,4}))?(?:[,\.\n]|$)/i)
+    const streetPrefixMatch = text.match(/(?:ברחוב|רחוב|ב?שד(?:רות)?)\s+([א-ת\s'״"-]{2,20}?)(?:\s+(\d{1,4}))?(?:[,.\n]|$)/i)
     if (streetPrefixMatch && streetPrefixMatch[1].trim().length > 1) {
       street = streetPrefixMatch[1].trim()
       if (streetPrefixMatch[2]) {

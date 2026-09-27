@@ -49,11 +49,10 @@ export function App() {
   // Notifications
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
 
-  // Dexie live queries (Offline 0ms reactivity)
-  const properties = useLiveQuery(() => db.properties.toArray()) || []
-  const leads = useLiveQuery(() => db.leads.toArray()) || []
-  const reminders = useLiveQuery(() => db.reminders.toArray()) || []
-  const profileSetting = useLiveQuery(() => db.settings.get('agent_profile'))
+  const properties = useLiveQuery(() => db.properties.toArray(), [], [] as Property[])
+  const leads = useLiveQuery(() => db.leads.toArray(), [], [] as Lead[])
+  const reminders = useLiveQuery(() => db.reminders.toArray(), [], [] as Reminder[])
+  const profileSetting = useLiveQuery(() => db.settings.get('agent_profile'), [], undefined)
   const agentProfile: AgentProfile = profileSetting?.value || DEFAULT_AGENT_PROFILE
 
   // Initialize DB and Seed Data
@@ -190,7 +189,7 @@ export function App() {
               setPublicPreviewProp(prop)
               setIsPrintMode(false)
             }}
-            onSelectLead={(lead) => {
+            onSelectLead={(_lead) => {
               setActiveTab('leads')
             }}
             onUpdateReminderStatus={handleUpdateReminderStatus}
@@ -227,7 +226,7 @@ export function App() {
           <LeadsView
             leads={leads}
             onOpenNewLead={() => setIsNewLeadOpen(true)}
-            onSelectLead={(lead) => {
+            onSelectLead={(_lead) => {
               // Switch to matches filtered for this lead
               setActiveTab('matches')
             }}
@@ -245,7 +244,7 @@ export function App() {
               setPublicPreviewProp(prop)
               setIsPrintMode(false)
             }}
-            onSelectLead={(lead) => {
+            onSelectLead={(_lead) => {
               setActiveTab('leads')
             }}
           />
@@ -253,6 +252,7 @@ export function App() {
 
         {activeTab === 'settings' && (
           <SettingsView
+            key={`${agentProfile.name}-${agentProfile.phone}-${agentProfile.agency_name}`}
             agentProfile={agentProfile}
             onUpdateAgentProfile={async (newProfile) => {
               await db.settings.put({ key: 'agent_profile', value: newProfile })
@@ -266,7 +266,7 @@ export function App() {
       <SmartPasteModal
         isOpen={isSmartPasteOpen}
         onClose={() => setIsSmartPasteOpen(false)}
-        onPropertyAdded={(newProp) => {
+        onPropertyAdded={(_newProp) => {
           setActiveTab('properties')
         }}
       />
@@ -274,7 +274,7 @@ export function App() {
       <NewLeadModal
         isOpen={isNewLeadOpen}
         onClose={() => setIsNewLeadOpen(false)}
-        onLeadAdded={(newLead) => {
+        onLeadAdded={(_newLead) => {
           setActiveTab('leads')
         }}
       />

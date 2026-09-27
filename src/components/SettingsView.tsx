@@ -3,18 +3,15 @@ import { AgentProfile } from '../types'
 import { db, exportFullDatabase, clearAllDataToCleanSlate, restoreDemoSeedData } from '../lib/db'
 import { ensureStoragePersistence } from '../lib/imageCompressor'
 import { 
-  User, 
   Shield, 
   Database, 
   Cloud, 
   Download, 
-  Upload, 
   HardDrive, 
   CheckCircle2, 
-  FileText,
-  Trash2,
-  RotateCcw,
-  Sparkles
+  Trash2, 
+  RotateCcw, 
+  Sparkles 
 } from 'lucide-react'
 
 interface SettingsViewProps {
@@ -29,12 +26,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onOpenOnboardingTour
 }) => {
   const [profile, setProfile] = useState<AgentProfile>(agentProfile)
-
-  React.useEffect(() => {
-    if (agentProfile) {
-      setProfile(agentProfile)
-    }
-  }, [agentProfile])
 
   const [supabaseUrl, setSupabaseUrl] = useState('')
   const [supabaseKey, setSupabaseKey] = useState('')
@@ -256,7 +247,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-          <span>סטטוס עמידות אחסון בדפדפן:</span>
+          <div className="flex items-center gap-2">
+            <span>סטטוס עמידות אחסון בדפדפן:</span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${isPersisted ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+              {isPersisted ? 'שמירה קבועה פעילה (Persistent)' : 'אחסון רגיל (Standard)'}
+            </span>
+          </div>
           <button
             onClick={handleCheckPersistence}
             className="text-blue-600 hover:underline font-medium"

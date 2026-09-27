@@ -5,7 +5,6 @@ import {
   Building2, 
   Search, 
   Filter, 
-  Share2, 
   Printer, 
   Eye, 
   EyeOff, 
@@ -16,8 +15,7 @@ import {
   ExternalLink,
   Shield,
   Car,
-  Home,
-  CheckCircle2
+  Home
 } from 'lucide-react'
 
 interface PropertiesViewProps {

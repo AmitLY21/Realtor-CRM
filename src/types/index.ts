@@ -132,3 +132,12 @@ export interface MatchScore {
     featuresScore: number
   }
 }
+
+export const STAGE_CONFIG: { id: LeadStage; title: string; color: string }[] = [
+  { id: 'new_lead', title: 'ליד חדש', color: 'bg-blue-500' },
+  { id: 'discovery', title: 'בירור צרכים', color: 'bg-indigo-500' },
+  { id: 'viewings', title: 'סיורים בנכסים', color: 'bg-purple-500' },
+  { id: 'negotiation', title: 'משא ומתן', color: 'bg-amber-500' },
+  { id: 'signing', title: 'עו״ד וחתימה', color: 'bg-cyan-500' },
+  { id: 'closed_won', title: 'עסקה נסגרה', color: 'bg-emerald-500' },
+]
