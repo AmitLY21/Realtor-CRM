@@ -71,7 +71,10 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         updated_at: now,
         status: 'active',
         transaction_type: draft.transaction_type,
-        is_exclusive: rawText.includes('בלעדיות') || rawText.includes('בלעדי'),
+        is_exclusive: draft.is_exclusive,
+        exclusive_until: draft.is_exclusive
+          ? new Date(Date.now() + 180 * 24 * 3600 * 1000).toISOString().split('T')[0]
+          : undefined,
         property_type: draft.property_type,
         city: draft.city,
         neighborhood: draft.neighborhood,

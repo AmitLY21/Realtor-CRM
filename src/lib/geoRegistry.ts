@@ -18,6 +18,9 @@ export const ISRAELI_STREET_REGISTRY: StreetMapping[] = [
   { street: 'שדרות רוטשילד', city: 'תל אביב-יפו', neighborhood: 'לב העיר', aliases: ['רוטשילד'] },
   { street: 'אבן גבירול', city: 'תל אביב-יפו', neighborhood: 'מרכז העיר / הצפון הישן' },
   { street: 'סוקולוב', city: 'תל אביב-יפו', neighborhood: 'הצפון הישן' },
+  { street: 'ארלוזורוב', city: 'תל אביב-יפו', neighborhood: 'הצפון הישן / מרכז' },
+  { street: 'רופין', city: 'תל אביב-יפו', neighborhood: 'הצפון הישן' },
+  { street: 'עפרוני', city: 'תל אביב-יפו', neighborhood: 'המשתלה / צפון העיר' },
   { street: 'ויצמן', city: 'תל אביב-יפו', neighborhood: 'הצפון החדש / כיכר המדינה' },
   { street: 'פנקס', city: 'תל אביב-יפו', neighborhood: 'הצפון הישן' },
   { street: 'יהודה הלוי', city: 'תל אביב-יפו', neighborhood: 'לב העיר' },
@@ -25,6 +28,12 @@ export const ISRAELI_STREET_REGISTRY: StreetMapping[] = [
   { street: 'אחד העם', city: 'תל אביב-יפו', neighborhood: 'לב העיר' },
   { street: 'יפת', city: 'תל אביב-יפו', neighborhood: 'יפו' },
   { street: 'הירקון', city: 'תל אביב-יפו', neighborhood: 'קו החוף / הצפון הישן' },
+
+  // כפר סבא
+  { street: 'תל חי', city: 'כפר סבא', neighborhood: 'מרכז העיר' },
+  { street: 'ויצמן', city: 'כפר סבא', neighborhood: 'מרכז העיר' },
+  { street: 'רוטשילד', city: 'כפר סבא', neighborhood: 'מרכז העיר' },
+  { street: 'התחיה', city: 'כפר סבא', neighborhood: 'הפרחים' },
 
   // רמת גן
   { street: 'ביאליק', city: 'רמת גן', neighborhood: 'מרכז העיר' },
@@ -47,6 +56,42 @@ export const ISRAELI_STREET_REGISTRY: StreetMapping[] = [
   { street: 'המלך ג׳ורג׳', city: 'ירושלים', neighborhood: 'מרכז העיר', aliases: ['המלך גורג', 'קינג גורג'] },
   { street: 'בית לחם', city: 'ירושלים', neighborhood: 'בקעה' }
 ]
+
+export const ISRAELI_CITY_ABBREVIATIONS: Record<string, string> = {
+  'כ"ס': 'כפר סבא',
+  'כ״ס': 'כפר סבא',
+  'כס': 'כפר סבא',
+  'כפר סבא': 'כפר סבא',
+  'ת"א': 'תל אביב-יפו',
+  'ת״א': 'תל אביב-יפו',
+  'תא': 'תל אביב-יפו',
+  'תל אביב': 'תל אביב-יפו',
+  'תל אביב יפו': 'תל אביב-יפו',
+  'ר"ג': 'רמת גן',
+  'ר״ג': 'רמת גן',
+  'רג': 'רמת גן',
+  'רמת גן': 'רמת גן',
+  'גבעתיים': 'גבעתיים',
+  'פ"ת': 'פתח תקווה',
+  'פ״ת': 'פתח תקווה',
+  'פת': 'פתח תקווה',
+  'פתח תקווה': 'פתח תקווה',
+  'ראשל"צ': 'ראשון לציון',
+  'ראשל״צ': 'ראשון לציון',
+  'ראשון לציון': 'ראשון לציון',
+  'הוד"ש': 'הוד השרון',
+  'הוד״ש': 'הוד השרון',
+  'הוד השרון': 'הוד השרון',
+  'הרצליה': 'הרצליה',
+  'רעננה': 'רעננה',
+  'ירושלים': 'ירושלים',
+  'י-ם': 'ירושלים',
+  'חיפה': 'חיפה',
+  'חולון': 'חולון',
+  'בת ים': 'בת ים',
+  'נתניה': 'נתניה',
+  'אשדוד': 'אשדוד'
+}
 
 export const ISRAELI_MAJOR_CITIES = [
   'תל אביב-יפו',
