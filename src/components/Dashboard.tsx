@@ -26,6 +26,8 @@ interface DashboardProps {
   onUpdateReminderStatus: (reminderId: string, isCompleted: boolean) => void
   onUpdateHeskemStatus: (reminderId: string, status: Reminder['heskem_status']) => void
   onNavigateToMatches: () => void
+  onOpenSmartPaste?: () => void
+  onOpenNewLead?: () => void
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -37,7 +39,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSelectLead,
   onUpdateReminderStatus,
   onUpdateHeskemStatus,
-  onNavigateToMatches
+  onNavigateToMatches,
+  onOpenSmartPaste,
+  onOpenNewLead
 }) => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -128,6 +132,42 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Clean Slate Onboarding Welcome Card */}
+      {activePropsCount === 0 && activeLeadsCount === 0 && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-6 sm:p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1">
+            <h3 className="text-base font-bold text-slate-900">המאגר שלך מוכן במצב לוח חלק (Clean Slate)!</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              הנתונים נשמרים מקומית במכשיר שלך (IndexedDB) לחלוטין ללא צורך בענן.
+              התחל לקלוט נכסים ולקוחות אמיתיים ישירות למערכת:
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {onOpenSmartPaste && (
+              <button
+                onClick={onOpenSmartPaste}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>הדבק נכס ראשון מוואטסאפ (Smart Paste)</span>
+              </button>
+            )}
+            {onOpenNewLead && (
+              <button
+                onClick={onOpenNewLead}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Users className="w-4 h-4 text-slate-500" />
+                <span>הוסף לקוח ראשון למשפך</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* EXCLUSIVITY RADAR (T-14) - Minimalist & Clean */}
       {expiringExclusivities.length > 0 && (

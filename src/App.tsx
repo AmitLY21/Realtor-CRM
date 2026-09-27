@@ -188,6 +188,8 @@ export function App() {
             onUpdateReminderStatus={handleUpdateReminderStatus}
             onUpdateHeskemStatus={handleUpdateHeskemStatus}
             onNavigateToMatches={() => setActiveTab('matches')}
+            onOpenSmartPaste={() => setIsSmartPasteOpen(true)}
+            onOpenNewLead={() => setIsNewLeadOpen(true)}
           />
         )}
 

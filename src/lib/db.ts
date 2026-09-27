@@ -30,9 +30,13 @@ export const DEFAULT_AGENT_PROFILE: AgentProfile = {
 }
 
 // Initial realistic Israeli Seed Data
-export async function seedInitialDataIfEmpty() {
+export async function seedInitialDataIfEmpty(force = false) {
+  if (!force && typeof window !== 'undefined' && localStorage.getItem('realtor_crm_clean_slate') === 'true') {
+    return
+  }
+
   const count = await db.properties.count()
-  if (count > 0) return
+  if (!force && count > 0) return
 
   const now = new Date()
   
@@ -368,4 +372,21 @@ export async function exportFullDatabase(): Promise<string> {
     settings
   }
   return JSON.stringify(data, null, 2)
+}
+
+// Clean Slate Operations (Local Database Reset)
+export async function clearAllDataToCleanSlate(): Promise<void> {
+  await db.properties.clear()
+  await db.leads.clear()
+  await db.reminders.clear()
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('realtor_crm_clean_slate', 'true')
+  }
+}
+
+export async function restoreDemoSeedData(): Promise<void> {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('realtor_crm_clean_slate')
+  }
+  await seedInitialDataIfEmpty(true)
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { AgentProfile } from '../types'
-import { db, exportFullDatabase } from '../lib/db'
+import { db, exportFullDatabase, clearAllDataToCleanSlate, restoreDemoSeedData } from '../lib/db'
 import { ensureStoragePersistence } from '../lib/imageCompressor'
 import { 
   User, 
@@ -11,7 +11,9 @@ import {
   Upload, 
   HardDrive, 
   CheckCircle2, 
-  FileText 
+  FileText,
+  Trash2,
+  RotateCcw
 } from 'lucide-react'
 
 interface SettingsViewProps {
@@ -27,6 +29,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [supabaseUrl, setSupabaseUrl] = useState('')
   const [supabaseKey, setSupabaseKey] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [isPersisted, setIsPersisted] = useState(true)
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -175,6 +178,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>הורד גיבוי (JSON)</span>
           </button>
+        </div>
+
+        {/* Clean Slate vs Demo Data Controls */}
+        <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h4 className="text-xs font-bold text-slate-900">איפוס לוח חלק (Clean Slate) מול נתוני דוגמה</h4>
+              <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                רוצה להתחיל להזין נכסים ולקוחות אמיתיים? רוקן את נתוני הדוגמה לקבלת מאגר נקי לחלוטין.
+                המאגר עובד מקומית ב-100% ללא צורך ב-Supabase או חיבור אינטרנט.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm('האם אתה בטוח שברצונך לרוקן את כל נתוני הדוגמה ולהתחיל מאגר ריק לחלוטין?')) {
+                  await clearAllDataToCleanSlate()
+                  setStatusMessage('המאגר רוקן בהצלחה! כעת תוכל להזין נכסים ולקוחות אמיתיים.')
+                  setTimeout(() => setStatusMessage(null), 4000)
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>רוקן מאגר והתחל מאפס (Clean Slate)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm('לטעון מחדש את נתוני הדוגמה הישראליים למאגר?')) {
+                  await restoreDemoSeedData()
+                  setStatusMessage('נתוני הדוגמה נטענו מחדש בהצלחה!')
+                  setTimeout(() => setStatusMessage(null), 4000)
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>טען מחדש נתוני דוגמה</span>
+            </button>
+          </div>
+
+          {statusMessage && (
+            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in duration-150">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span className="font-medium">{statusMessage}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between text-xs text-slate-500 pt-1">

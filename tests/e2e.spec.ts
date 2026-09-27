@@ -214,5 +214,35 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await page.click('button:has-text("ביטול")')
     await expect(page.locator('text=מחיקת לקוח לצמיתות')).not.toBeVisible()
   })
+
+  test('9. Clean Slate database reset and demo restoration in Settings', async ({ page }) => {
+    // Navigate to Settings
+    await page.click('button:has-text("הגדרות")')
+    await expect(page.locator('text=איפוס לוח חלק (Clean Slate)')).toBeVisible()
+
+    // Handle confirm dialog for clean slate
+    page.once('dialog', async dialog => {
+      await dialog.accept()
+    })
+
+    // Click Clean Slate button
+    await page.click('button:has-text("רוקן מאגר והתחל מאפס (Clean Slate)")')
+
+    // Navigate to Dashboard and verify 0 records and onboarding welcome card
+    await page.click('button:has-text("לוח בקרה")')
+    await expect(page.locator('text=המאגר שלך מוכן במצב לוח חלק (Clean Slate)!')).toBeVisible()
+    await expect(page.locator('text=הדבק נכס ראשון מוואטסאפ (Smart Paste)')).toBeVisible()
+
+    // Navigate back to Settings and restore demo data
+    await page.click('button:has-text("הגדרות")')
+    page.once('dialog', async dialog => {
+      await dialog.accept()
+    })
+    await page.click('button:has-text("טען מחדש נתוני דוגמה")')
+
+    // Navigate back to Dashboard and verify demo data restored
+    await page.click('button:has-text("לוח בקרה")')
+    await expect(page.locator('text=ראדאר בלעדיות (מסתיים תוך 14 יום!)')).toBeVisible()
+  })
 })
 

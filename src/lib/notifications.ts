@@ -97,8 +97,8 @@ export async function sendPushNotification(title: string, body: string, type: In
         if (reg && reg.showNotification) {
           reg.showNotification(title, {
             body,
-            icon: '/logo.svg',
-            badge: '/logo.svg',
+            icon: '/icons/192x192.png',
+            badge: '/icons/96x96.png',
             dir: 'rtl',
             lang: 'he'
           })
@@ -107,7 +107,7 @@ export async function sendPushNotification(title: string, body: string, type: In
       }
       new Notification(title, {
         body,
-        icon: '/logo.svg',
+        icon: '/icons/192x192.png',
         dir: 'rtl',
         lang: 'he'
       })
