@@ -1,4 +1,4 @@
-import { Property, Lead, MatchScore } from '../types'
+import { Property, Lead, MatchScore, MatchMatrixResult } from '../types'
 import { hebrewSimilarity, lookupNeighborhoodByStreet } from './geoRegistry'
 
 export function calculateMatchScore(property: Property, lead: Lead): MatchScore {
@@ -163,5 +163,38 @@ export function calculateMatchScore(property: Property, lead: Lead): MatchScore 
       parkingScore,
       featuresScore
     }
+  }
+}
+
+/**
+ * Encapsulated Match Matrix Calculator
+ * Computes all pairwise scores, hot matches (85%+), and ID count index maps in one pass.
+ */
+export function calculateMatchMatrix(properties: Property[], leads: Lead[]): MatchMatrixResult {
+  const matches: MatchScore[] = []
+  const propMap: Record<string, number> = {}
+  const leadMap: Record<string, number> = {}
+
+  for (const prop of properties) {
+    if (prop.status !== 'active') continue
+    for (const lead of leads) {
+      if (lead.stage === 'closed_lost') continue
+      const result = calculateMatchScore(prop, lead)
+      if (!result.isDisqualified && result.score >= 50) {
+        matches.push(result)
+        if (result.score >= 70) {
+          propMap[prop.id] = (propMap[prop.id] || 0) + 1
+          leadMap[lead.id] = (leadMap[lead.id] || 0) + 1
+        }
+      }
+    }
+  }
+
+  const hot = matches.filter(m => m.score >= 85)
+  return {
+    allMatches: matches,
+    hotMatches: hot,
+    propMatchesMap: propMap,
+    leadMatchesMap: leadMap
   }
 }
