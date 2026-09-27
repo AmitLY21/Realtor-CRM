@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti'
 import { Lead, LeadStage, TransactionType, STAGE_CONFIG } from '../types'
 import { formatILS, formatPhone, getDaysSince } from '../lib/utils'
 import { playNotificationChime } from '../lib/notifications'
+import { WhatsAppMenu } from './leads/WhatsAppMenu'
 import { 
   Search, 
   Plus, 
@@ -137,29 +138,6 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     }
     setDraggingLeadId(null)
     setDragOverStage(null)
-  }
-
-  // WhatsApp quick templates
-  const sendWhatsAppTemplate = (phone: string, name: string, templateType: 'general' | 'showing' | 'price_drop' | 'deal_closed') => {
-    const cleanDigits = phone.replace(/\D/g, '')
-    const intlPhone = cleanDigits.startsWith('0') ? '972' + cleanDigits.slice(1) : cleanDigits
-    let text = ''
-    switch (templateType) {
-      case 'general':
-        text = `היי ${name}, כאן המתווך שלך, מה שלומך? רציתי להתעדכן איך מתקדם החיפוש והאם עלו דרישות חדשות.`
-        break
-      case 'showing':
-        text = `היי ${name}, התפנה מועד מתאים לסיור בנכס שמתאים בדיוק לפרופיל שלך. מתי נוח לך שנתאם היום או מחר?`
-        break
-      case 'price_drop':
-        text = `היי ${name}, רציתי לעדכן אותך ראשון: יש ירידת מחיר משמעותית בנכס מבוקש באזור שלך! מתי נוח שנדבר?`
-        break
-      case 'deal_closed':
-        text = `מזל טוב ${name}! שמחתי מאוד ללוות אותך בעסקה המוצלחת. מאחל המון ברכה והצלחה בבית החדש!`
-        break
-    }
-    window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(text)}`, '_blank')
-    setActiveWhatsAppLeadId(null)
   }
 
   // Inline note editing
@@ -545,58 +523,16 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                               </a>
 
                               {/* WhatsApp Template Dropdown */}
-                              <div className="relative">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setActiveWhatsAppLeadId(isWhatsAppMenuOpen ? null : lead.id)
-                                  }}
-                                  className="p-1.5 rounded-md bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 transition-colors"
-                                  title="שליחת הודעת וואטסאפ"
-                                >
-                                  <MessageSquare className="w-3 h-3" />
-                                </button>
-
-                                {isWhatsAppMenuOpen && (
-                                  <div
-                                    className="absolute right-0 bottom-full mb-1 w-52 rounded-xl bg-white border border-slate-200 p-1 shadow-xl z-50 text-right animate-in fade-in duration-100"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <div className="px-2 py-1 text-[10px] font-bold text-slate-400 border-b border-slate-100">
-                                      בחר נוסח וואטסאפ מהיר:
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => sendWhatsAppTemplate(lead.phone, lead.full_name, 'general')}
-                                      className="w-full text-right px-2 py-1.5 text-xs rounded-md text-slate-700 hover:bg-slate-50"
-                                    >
-                                      👋 התעניינות כללית
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => sendWhatsAppTemplate(lead.phone, lead.full_name, 'showing')}
-                                      className="w-full text-right px-2 py-1.5 text-xs rounded-md text-slate-700 hover:bg-slate-50"
-                                    >
-                                      🏡 תיאום סיור בנכס
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => sendWhatsAppTemplate(lead.phone, lead.full_name, 'price_drop')}
-                                      className="w-full text-right px-2 py-1.5 text-xs rounded-md text-slate-700 hover:bg-slate-50"
-                                    >
-                                      📉 עדכון על ירידת מחיר
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => sendWhatsAppTemplate(lead.phone, lead.full_name, 'deal_closed')}
-                                      className="w-full text-right px-2 py-1.5 text-xs rounded-md text-slate-700 hover:bg-slate-50"
-                                    >
-                                      🎉 ברכות על סגירת העסקה
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
+                              <WhatsAppMenu
+                                phone={lead.phone}
+                                name={lead.full_name}
+                                isOpen={isWhatsAppMenuOpen}
+                                onToggle={(e) => {
+                                  e.stopPropagation()
+                                  setActiveWhatsAppLeadId(isWhatsAppMenuOpen ? null : lead.id)
+                                }}
+                                onClose={() => setActiveWhatsAppLeadId(null)}
+                              />
                             </div>
 
                             {/* Stepper Buttons (Back & Next) */}
@@ -717,7 +653,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                           </a>
                           <button
                             type="button"
-                            onClick={() => sendWhatsAppTemplate(lead.phone, lead.full_name, 'general')}
+                            onClick={() => {
+                              const cleanDigits = lead.phone.replace(/\D/g, '')
+                              const intlPhone = cleanDigits.startsWith('0') ? '972' + cleanDigits.slice(1) : cleanDigits
+                              const text = `היי ${lead.full_name}, כאן המתווך שלך, מה שלומך?`
+                              window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(text)}`, '_blank')
+                            }}
                             className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600"
                             title="וואטסאפ"
                           >
