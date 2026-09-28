@@ -309,6 +309,40 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('input[value="054-7776655"]')).toBeVisible()
     await expect(page.locator('input[value="ישראלי נכסים"]')).toBeVisible()
   })
+
+  test('12. Property deletion from catalog and lead direct deletion from Kanban', async ({ page }) => {
+    // 1. Test Property Deletion
+    await page.click('button:has-text("נכסים")')
+    await expect(page.locator('text=כל הנכסים')).toBeVisible()
+
+    // Click delete on the first property card
+    const deletePropBtn = page.locator('button[title="מחק נכס מהמאגר"]').first()
+    await deletePropBtn.click()
+
+    // Confirm dialog appears
+    await expect(page.locator('text=מחיקת נכס מהמאגר')).toBeVisible()
+    await page.click('button:has-text("ביטול")')
+    await expect(page.locator('text=מחיקת נכס מהמאגר')).not.toBeVisible()
+
+    // Now delete property with confirmation
+    await deletePropBtn.click()
+    await expect(page.locator('text=מחיקת נכס מהמאגר')).toBeVisible()
+    await page.click('button:has-text("אישור מחיקה")')
+    await expect(page.locator('text=מחיקת נכס מהמאגר')).not.toBeVisible()
+
+    // 2. Test Lead Direct Deletion from Kanban
+    await page.click('button:has-text("לקוחות ומשפך")')
+    await expect(page.locator('text=כל הלקוחות')).toBeVisible()
+
+    // Click direct delete button on first Kanban card
+    const deleteLeadBtn = page.locator('button[title="מחק לקוח מהמשפך"]').first()
+    await deleteLeadBtn.click()
+
+    // Confirm dialog appears
+    await expect(page.locator('text=מחיקת לקוח לצמיתות')).toBeVisible()
+    await page.click('button:has-text("ביטול")')
+    await expect(page.locator('text=מחיקת לקוח לצמיתות')).not.toBeVisible()
+  })
 })
 
 test.describe('First-time user onboarding tour auto-launch', () => {
@@ -383,4 +417,5 @@ test.describe('First-time user onboarding tour auto-launch', () => {
     await expect(page.locator('text=https://yad2.co.il/item/whatsapp123').first()).toBeVisible()
   })
 })
+
 

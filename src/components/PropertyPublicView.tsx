@@ -22,7 +22,9 @@ import {
   Package,
   Phone,
   FileText,
-  Copy
+  Copy,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react'
 
 interface PropertyPublicViewProps {
@@ -31,6 +33,7 @@ interface PropertyPublicViewProps {
   isOpen: boolean
   onClose: () => void
   isPrintMode?: boolean
+  onDelete?: (propertyId: string) => void
 }
 
 export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
@@ -38,11 +41,13 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
   agent,
   isOpen,
   onClose,
-  isPrintMode = false
+  isPrintMode = false,
+  onDelete
 }) => {
   const [activePhotoIdx, setActivePhotoIdx] = useState(0)
   const [copiedLink, setCopiedLink] = useState(false)
   const [copiedDescription, setCopiedDescription] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   if (!isOpen || !property) return null
 
@@ -108,6 +113,17 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
               <Printer className="w-3.5 h-3.5" />
               <span>הדפסה / PDF</span>
             </button>
+
+            {onDelete && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="no-print flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 text-xs font-medium transition-colors shadow-2xs cursor-pointer"
+                title="מחק נכס מהמאגר"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">מחק נכס</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}
@@ -404,6 +420,52 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
           </button>
         </footer>
       </div>
+
+      {/* Confirm Delete Property Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
+              <div className="p-2 rounded-lg bg-red-50 border border-red-100">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">מחיקת נכס מהמאגר</h3>
+                <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-700 leading-relaxed">
+              האם אתה בטוח שברצונך למחוק את הנכס ב-<strong>{property.street} {property.house_number || ''}, {property.city}</strong> מהמאגר?
+              כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
+            </p>
+
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDelete) {
+                    onDelete(property.id)
+                  }
+                  setShowDeleteConfirm(false)
+                  onClose()
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>אישור מחיקה</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -350,6 +350,21 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                 {lead.transaction_type === 'sale' ? 'רכישה' : 'שכירות'}
                               </span>
 
+                              {/* Direct Delete Button */}
+                              {onDeleteLead && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setLeadToDelete(lead)
+                                  }}
+                                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                  title="מחק לקוח מהמשפך"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+
                               {/* 3-dots Context Menu Button */}
                               <div className="relative">
                                 <button
@@ -358,7 +373,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                     e.stopPropagation()
                                     setActiveMenuLeadId(isMenuOpen ? null : lead.id)
                                   }}
-                                  className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                  className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
                                   title="אפשרויות נוספות"
                                 >
                                   <MoreVertical className="w-3.5 h-3.5" />

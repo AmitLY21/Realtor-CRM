@@ -17,7 +17,9 @@ import {
   Car, 
   Home,
   MessageSquare,
-  Pencil
+  Pencil,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
@@ -30,6 +32,7 @@ interface PropertiesViewProps {
   onToggleAntiPoach: (propertyId: string, currentVal: boolean) => void
   onUpdatePrice: (property: Property) => void
   onEditProperty: (property: Property) => void
+  onDeleteProperty?: (propertyId: string) => void
   matchesMap: Record<string, number> // propertyId -> count of matching leads
 }
 
@@ -42,10 +45,12 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
   onToggleAntiPoach,
   onUpdatePrice,
   onEditProperty,
+  onDeleteProperty,
   matchesMap
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [txTypeFilter, setTxTypeFilter] = useState<'all' | TransactionType>('all')
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null)
   const [filterMamadOnly, setFilterMamadOnly] = useState(false)
   const [filterParkingOnly, setFilterParkingOnly] = useState(false)
   const [filterExclusiveOnly, setFilterExclusiveOnly] = useState(false)
@@ -493,6 +498,19 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </button>
+
+                    {onDeleteProperty && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPropertyToDelete(prop)
+                        }}
+                        className="h-8 w-8 rounded-lg bg-white hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
+                        title="מחק נכס מהמאגר"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Primary Modification Actions Group */}
@@ -523,6 +541,51 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* CONFIRM DELETE PROPERTY MODAL */}
+      {propertyToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
+              <div className="p-2 rounded-lg bg-red-50 border border-red-100">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">מחיקת נכס מהמאגר</h3>
+                <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-700 leading-relaxed">
+              האם אתה בטוח שברצונך למחוק את הנכס ברחוב <strong>{propertyToDelete.street} {propertyToDelete.house_number || ''}, {propertyToDelete.city}</strong> מהמאגר?
+              כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
+            </p>
+
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setPropertyToDelete(null)}
+                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteProperty) {
+                    onDeleteProperty(propertyToDelete.id)
+                  }
+                  setPropertyToDelete(null)
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>אישור מחיקה</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

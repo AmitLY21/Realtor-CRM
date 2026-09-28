@@ -8,7 +8,9 @@ import {
   Coins, 
   FileText, 
   Shield, 
-  Layers
+  Layers,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react'
 import {
   Dialog,
@@ -25,13 +27,15 @@ interface EditPropertyModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (updatedProperty: Property) => void
+  onDelete?: (propertyId: string) => void
 }
 
 export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
   property,
   isOpen,
   onClose,
-  onSave
+  onSave,
+  onDelete
 }) => {
   if (!isOpen || !property) return null
 
@@ -54,7 +58,8 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
           key={property.id} 
           property={property} 
           onClose={onClose} 
-          onSave={onSave} 
+          onSave={onSave}
+          onDelete={onDelete}
         />
       </DialogContent>
     </Dialog>
@@ -65,13 +70,16 @@ interface EditPropertyFormProps {
   property: Property
   onClose: () => void
   onSave: (updatedProperty: Property) => void
+  onDelete?: (propertyId: string) => void
 }
 
 const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
   property,
   onClose,
-  onSave
+  onSave,
+  onDelete
 }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   // Form state initialized directly from property
   const [street, setStreet] = useState(property.street)
   const [houseNumber, setHouseNumber] = useState(property.house_number || '')
@@ -167,7 +175,8 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs max-h-[80vh]">
+    <>
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs max-h-[80vh]">
           {validationError && (
             <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {validationError}
@@ -490,22 +499,85 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           </div>
 
           {/* Footer Submit Bar */}
-          <DialogFooter className="mt-3 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-            >
-              ביטול
-            </Button>
-            <Button
-              type="submit"
-              className="gap-1.5"
-            >
-              <Save className="size-4" />
-              <span>שמור שינויים</span>
-            </Button>
+          <DialogFooter className="mt-3 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 flex items-center justify-between sm:justify-between w-full">
+            <div>
+              {onDelete && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-600 hover:bg-red-50 hover:border-red-200 border-slate-200 gap-1.5"
+                >
+                  <Trash2 className="size-4 text-red-500" />
+                  <span>מחק נכס</span>
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onClose}
+              >
+                ביטול
+              </Button>
+              <Button
+                type="submit"
+                className="gap-1.5"
+              >
+                <Save className="size-4" />
+                <span>שמור שינויים</span>
+              </Button>
+            </div>
           </DialogFooter>
         </form>
+
+        {/* Confirm Delete Property Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
+                <div className="p-2 rounded-lg bg-red-50 border border-red-100">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">מחיקת נכס מהמאגר</h3>
+                  <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-700 leading-relaxed">
+                האם אתה בטוח שברצונך למחוק את הנכס ב-<strong>{property.street} {property.house_number || ''}, {property.city}</strong> מהמאגר?
+                כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
+              </p>
+
+              <div className="pt-2 flex items-center justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    if (onDelete) {
+                      onDelete(property.id)
+                    }
+                    setShowDeleteConfirm(false)
+                    onClose()
+                  }}
+                  className="gap-1.5"
+                >
+                  <Trash2 className="size-4" />
+                  <span>אישור מחיקה</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
   )
 }

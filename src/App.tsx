@@ -132,6 +132,12 @@ export function App() {
     setActiveModal(null)
   }
 
+  const handleDeleteProperty = async (propertyId: string) => {
+    await db.properties.delete(propertyId)
+    await sendPushNotification('נכס נמחק מהמאגר', 'הנכס הוסר בהצלחה מהמאגר המקומי', 'system')
+    setActiveModal(null)
+  }
+
   const handleUpdateReminderStatus = async (reminderId: string, isCompleted: boolean) => {
     await db.reminders.update(reminderId, { is_completed: isCompleted })
   }
@@ -217,6 +223,7 @@ export function App() {
             onToggleAntiPoach={handleToggleAntiPoach}
             onUpdatePrice={(prop) => setActiveModal({ type: 'price_update', property: prop })}
             onEditProperty={(prop) => setActiveModal({ type: 'edit_property', property: prop })}
+            onDeleteProperty={handleDeleteProperty}
             matchesMap={propMatchesMap}
           />
         )}
@@ -283,6 +290,7 @@ export function App() {
         isOpen={activeModal?.type === 'public_preview'}
         onClose={() => setActiveModal(null)}
         isPrintMode={activeModal?.type === 'public_preview' ? activeModal.isPrintMode : false}
+        onDelete={handleDeleteProperty}
       />
 
       <PriceUpdateModal
@@ -297,6 +305,7 @@ export function App() {
         isOpen={activeModal?.type === 'edit_property'}
         onClose={() => setActiveModal(null)}
         onSave={handleUpdateProperty}
+        onDelete={handleDeleteProperty}
       />
 
       <GlobalSearchModal
