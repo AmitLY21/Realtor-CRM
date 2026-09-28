@@ -9,7 +9,18 @@ import {
   Check, 
   ChevronRight, 
   ChevronLeft,
-  MapPin
+  MapPin,
+  Lock,
+  Building2,
+  Maximize2,
+  Calendar,
+  Layers,
+  Shield,
+  ArrowUpDown,
+  Sun,
+  Car,
+  Package,
+  Phone
 } from 'lucide-react'
 
 interface PropertyPublicViewProps {
@@ -51,38 +62,45 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
   }
 
   const addressDisplay = property.hide_exact_address
-    ? `${property.city}, ${property.neighborhood || property.street} (מיקום מרכזי)`
+    ? `${property.city}, ${property.neighborhood || property.street}`
     : `${property.street} ${property.house_number || ''}, ${property.city}`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="print-page w-full max-w-3xl rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-xl overflow-hidden flex flex-col max-h-[95vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="print-page w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden border border-slate-200">
         
-        {/* Top Action Bar (Hidden on Print) */}
-        <div className="no-print p-3 sm:p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-800">
+        {/* Top Header Bar (Hidden on Print) */}
+        <header className="no-print px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs sm:text-sm font-bold text-slate-800 truncate">
               {isPrintMode ? 'תצוגת דף נכס להדפסה / PDF' : 'תצוגת לקוח ציבורית (קישור שיתוף)'}
             </span>
             {property.hide_exact_address && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                כתובת מוסתרת (מניעת עקיפה)
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                <Lock className="w-3 h-3 text-slate-500" />
+                <span>כתובת מוגנת</span>
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleShareLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-xs text-slate-700 border border-slate-200 transition-colors"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                copiedLink 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-2xs'
+              }`}
+              title="העתק קישור לדף ציבורי"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-blue-600" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copiedLink ? 'הועתק' : 'העתק קישור'}</span>
+              <span className="hidden sm:inline">{copiedLink ? 'הועתק' : 'העתק קישור'}</span>
             </button>
 
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-colors shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-colors shadow-2xs cursor-pointer"
+              title="הדפסה ושמירה כ-PDF"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>הדפסה / PDF</span>
@@ -90,47 +108,96 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors mr-1"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+              title="סגור תצוגה"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Scrollable Document Container */}
-        <div className="p-4 sm:p-8 overflow-y-auto space-y-5 flex-1 bg-white print:p-0">
+        <div className="overflow-y-auto flex-1 bg-white p-4 sm:p-6 space-y-5 pb-32 sm:pb-8 print:p-0">
           
-          {/* Branded Realtor Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-            <div>
-              <span className="text-[10px] font-bold tracking-wider text-blue-600 uppercase block">
-                {agent.agency_name}
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
-                {agent.name}
-              </h2>
-              <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                <span>רישיון תיווך מקרקעין: <strong>{agent.license_number}</strong></span>
-                <span>•</span>
-                <span dir="ltr">{agent.phone}</span>
+          {/* Agent Branding Banner */}
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-xs flex items-center justify-center shrink-0">
+                {agent.name.slice(0, 1)}
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-semibold text-blue-600 block truncate">
+                  {agent.agency_name}
+                </span>
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight truncate">
+                  {agent.name}
+                </h2>
+                <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                  <span>רישיון תיווך מקרקעין: <strong className="font-semibold text-slate-700">{agent.license_number}</strong></span>
+                </div>
               </div>
             </div>
 
-            <div className="text-left">
-              <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
-                {property.transaction_type === 'sale' ? 'למכירה' : 'להשכרה'}
-              </span>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-                {formatILS(property.price)}
-                {property.transaction_type === 'rent' && <span className="text-xs font-normal text-slate-500">/חודש</span>}
+            <div className="text-left shrink-0">
+              <a
+                href={`tel:${agent.phone.replace(/\D/g, '')}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                dir="ltr"
+              >
+                <Phone className="w-3.5 h-3.5 text-slate-500" />
+                <span>{agent.phone}</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Property Headline & Price (Balanced, no overlaps) */}
+          <div className="space-y-2 pb-3 border-b border-slate-200">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                  property.transaction_type === 'sale'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                }`}>
+                  {property.transaction_type === 'sale' ? 'למכירה' : 'להשכרה'}
+                </span>
+                {property.is_exclusive && (
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    בלעדיות
+                  </span>
+                )}
+              </div>
+
+              {/* Price display */}
+              <div className="flex items-baseline gap-1.5" dir="rtl">
+                <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">
+                  {formatILS(property.price)}
+                </span>
+                {property.transaction_type === 'rent' && (
+                  <span className="text-xs font-normal text-slate-500">/ חודש</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-1.5 pt-0.5">
+              <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                  {addressDisplay}
+                </h3>
+                {property.hide_exact_address && (
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    (מיקום מרכזי • כתובת מדויקת תימסר בתיאום סיור ישיר מול המתווך)
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Photo Gallery Showcase */}
+          {/* Gallery Showcase */}
           {property.photos && property.photos.length > 0 && (
             <div className="space-y-2">
-              <div className="relative h-64 sm:h-80 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
                 <img
                   src={property.photos[activePhotoIdx]}
                   alt="תמונת נכס ראשית"
@@ -138,32 +205,42 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
                 />
 
                 {property.photos.length > 1 && (
-                  <div className="no-print absolute inset-0 flex items-center justify-between p-2 pointer-events-none">
-                    <button
-                      onClick={() => setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : property.photos.length - 1))}
-                      className="p-1.5 rounded-full bg-white/90 text-slate-800 pointer-events-auto hover:bg-white shadow-xs"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setActivePhotoIdx((prev) => (prev < property.photos.length - 1 ? prev + 1 : 0))}
-                      className="p-1.5 rounded-full bg-white/90 text-slate-800 pointer-events-auto hover:bg-white shadow-xs"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                  </div>
+                  <>
+                    <div className="no-print absolute inset-0 flex items-center justify-between p-2.5 pointer-events-none">
+                      <button
+                        onClick={() => setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : property.photos.length - 1))}
+                        className="p-1.5 rounded-full bg-white/90 hover:bg-white text-slate-700 border border-slate-200/80 shadow-xs pointer-events-auto transition-transform active:scale-95 cursor-pointer"
+                        title="תמונה קודמת"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setActivePhotoIdx((prev) => (prev < property.photos.length - 1 ? prev + 1 : 0))}
+                        className="p-1.5 rounded-full bg-white/90 hover:bg-white text-slate-700 border border-slate-200/80 shadow-xs pointer-events-auto transition-transform active:scale-95 cursor-pointer"
+                        title="תמונה הבאה"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
+                      {activePhotoIdx + 1} / {property.photos.length}
+                    </div>
+                  </>
                 )}
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails Strip */}
               {property.photos.length > 1 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   {property.photos.map((p, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActivePhotoIdx(idx)}
-                      className={`relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
-                        activePhotoIdx === idx ? 'border-blue-600' : 'border-transparent opacity-60 hover:opacity-100'
+                      className={`relative w-16 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                        activePhotoIdx === idx 
+                          ? 'border-blue-600 opacity-100' 
+                          : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
                       <img src={p} alt="" className="w-full h-full object-cover" />
@@ -174,91 +251,118 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
             </div>
           )}
 
-          {/* Specifications Matrix */}
+          {/* Structured Specifications Matrix */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>{addressDisplay}</span>
-            </h3>
+            <h4 className="text-xs font-semibold text-slate-600">
+              מפרט ופרטי הנכס
+            </h4>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <span className="text-[11px] text-slate-500 block">מספר חדרים:</span>
-                <span className="text-sm font-bold text-slate-900">{property.rooms} חדרים</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 block font-medium">מספר חדרים:</span>
+                  <span className="text-sm font-semibold text-slate-900">{property.rooms} חדרים</span>
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <span className="text-[11px] text-slate-500 block">קומה בבניין:</span>
-                <span className="text-sm font-bold text-slate-900">קומה {property.floor} מתוך {property.total_floors}</span>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 block font-medium">קומה בבניין:</span>
+                  <span className="text-sm font-semibold text-slate-900">קומה {property.floor} מתוך {property.total_floors}</span>
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <span className="text-[11px] text-slate-500 block">שטח בנוי:</span>
-                <span className="text-sm font-bold text-slate-900">{property.sqm} מ״ר</span>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                  <Maximize2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 block font-medium">שטח בנוי:</span>
+                  <span className="text-sm font-semibold text-slate-900">{property.sqm} מ״ר</span>
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <span className="text-[11px] text-slate-500 block">תאריך כניסה:</span>
-                <span className="text-sm font-bold text-slate-900">{property.vacancy_date || 'מיידי / גמיש'}</span>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 block font-medium">תאריך כניסה:</span>
+                  <span className="text-sm font-semibold text-slate-900">{property.vacancy_date || 'מיידי / גמיש'}</span>
+                </div>
               </div>
             </div>
 
-            {/* Feature Badges */}
-            <div className="flex items-center gap-1.5 flex-wrap pt-1">
+            {/* Feature Badges with Icons */}
+            <div className="flex items-center gap-2 flex-wrap pt-1">
               {property.has_mamad && (
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
-                  מרחב מוגן דירתי (ממ״ד)
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                  <Shield className="w-3.5 h-3.5 text-blue-600" />
+                  <span>מרחב מוגן דירתי (ממ״ד)</span>
                 </span>
               )}
               {property.has_elevator && (
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
-                  מעלית בבניין
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-blue-600" />
+                  <span>מעלית בבניין</span>
                 </span>
               )}
               {property.has_balcony && (
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
-                  מרפסת שמש
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                  <Sun className="w-3.5 h-3.5 text-blue-600" />
+                  <span>מרפסת שמש</span>
                 </span>
               )}
               {property.parking_type !== 'none' && (
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
-                  חניה ({property.parking_legal === 'tabu' ? 'בטאבו' : 'משותפת'})
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                  <Car className="w-3.5 h-3.5 text-blue-600" />
+                  <span>חניה ({property.parking_legal === 'tabu' ? 'בטאבו' : 'משותפת'})</span>
                 </span>
               )}
               {property.has_storage && (
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
-                  מחסן פרטי
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                  <Package className="w-3.5 h-3.5 text-blue-600" />
+                  <span>מחסן פרטי</span>
                 </span>
               )}
             </div>
           </div>
 
           {/* Legal Disclaimer Box */}
-          <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed">
-            <p className="font-semibold text-slate-700 mb-0.5">הבהרה משפטית (חוק המתווכים במקרקעין):</p>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1">
+            <p className="font-semibold text-slate-700">הבהרה משפטית (חוק המתווכים במקרקעין):</p>
             <p>
               כל הפרטים המופיעים בדף נכס זה נמסרו ע״י בעל הנכס ובאחריותו הבלעדית. ביקור בנכס כפוף לחתימה על הזמנה בכתב לביצוע פעולת תיווך כחוק לפני הצגת הנכס. ט.ל.ח.
             </p>
           </div>
         </div>
 
-        {/* Client WhatsApp Floating Action Footer (Hidden on Print) */}
-        <div className="no-print p-3 sm:p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs">
+        {/* Client WhatsApp Action Footer (Hidden on Print) */}
+        <footer className="no-print p-3 sm:p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center font-bold text-xs shrink-0">
               {agent.name.slice(0, 1)}
             </div>
-            <div>
-              <p className="text-xs font-bold text-slate-900">{agent.name}</p>
-              <p className="text-[11px] text-slate-500">{agent.phone}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">{agent.name}</p>
+              <p className="text-[11px] text-slate-500 truncate" dir="ltr">{agent.phone}</p>
             </div>
           </div>
 
           <button
             onClick={handleWhatsAppAgent}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 cursor-pointer"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>פנה למתווך בוואטסאפ</span>
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   )
