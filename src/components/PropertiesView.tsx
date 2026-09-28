@@ -51,6 +51,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
   const [filterExclusiveOnly, setFilterExclusiveOnly] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null)
+  const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({})
 
   // Filter properties
   const filtered = properties.filter(p => {
@@ -408,10 +409,10 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
 
                     {/* Full WhatsApp Message / Property Notes */}
                     {prop.notes && (
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs space-y-1">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-medium text-slate-600 flex items-center gap-1.5">
-                            <MessageSquare className="w-3 h-3 text-slate-500" />
+                            <MessageSquare className="size-3 text-slate-500" />
                             <span>הודעת מקור מוואטסאפ:</span>
                           </span>
                           <button
@@ -429,11 +430,25 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                           </button>
                         </div>
                         <p 
-                          className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 cursor-text select-text"
+                          className={`text-slate-600 text-[11px] leading-relaxed whitespace-pre-wrap cursor-text select-text ${
+                            expandedNotes[prop.id] ? '' : 'line-clamp-2'
+                          }`}
                           onClick={(e) => e.stopPropagation()}
                         >
                           {prop.notes}
                         </p>
+                        {prop.notes.length > 70 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setExpandedNotes(prev => ({ ...prev, [prop.id]: !prev[prop.id] }))
+                            }}
+                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer self-start"
+                          >
+                            {expandedNotes[prop.id] ? 'הצג פחות ▲' : 'קרא את כל ההודעה ▼'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
