@@ -176,7 +176,7 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs max-h-[80vh]">
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 text-xs max-h-[80vh]">
           {validationError && (
             <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
               {validationError}
@@ -184,9 +184,9 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           )}
 
           {/* Section 1: Location */}
-          <div className="space-y-2.5">
+          <div className="flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
+              <MapPin className="size-3.5 text-blue-600" />
               כתובת ומיקום
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -244,9 +244,9 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           </div>
 
           {/* Section 2: Property Type & Transaction */}
-          <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Home className="w-3.5 h-3.5 text-blue-600" />
+              <Home className="size-3.5 text-blue-600" />
               סוג עסקה ונכס
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -296,9 +296,9 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           </div>
 
           {/* Section 3: Financials & Size */}
-          <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Coins className="w-3.5 h-3.5 text-blue-600" />
+              <Coins className="size-3.5 text-blue-600" />
               מחיר ומידות
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
@@ -357,9 +357,9 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           </div>
 
           {/* Section 4: Amenities & Features */}
-          <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-blue-600" />
+              <Layers className="size-3.5 text-blue-600" />
               מאפיינים ותוספות
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -436,13 +436,13 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
           </div>
 
           {/* Section 5: Exclusivity & Anti-Poaching */}
-          <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
             <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-blue-600" />
+              <Shield className="size-3.5 text-blue-600" />
               בלעדיות ואבטחת נכס (Anti-Poaching)
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-2">
                 <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-800">
                   <input
                     type="checkbox"
@@ -474,17 +474,17 @@ const EditPropertyForm: React.FC<EditPropertyFormProps> = ({
                   type="checkbox"
                   checked={hideExactAddress}
                   onChange={(e) => setHideExactAddress(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-0 w-4 h-4 cursor-pointer"
+                  className="rounded text-blue-600 focus:ring-0 size-4 cursor-pointer"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 6: Full Message / Notes */}
-          <div className="pt-3 border-t border-slate-100 space-y-2">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <FileText className="size-3.5 text-blue-600" />
                 טקסט ההודעה המקורית מוואטסאפ / הערות סוכן
               </h4>
               <span className="text-[10px] text-slate-400">מוצג בכרטיס הנכס במאגר</span>

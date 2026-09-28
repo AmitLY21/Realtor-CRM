@@ -59,7 +59,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-24 md:pb-12">
+    <div className="max-w-3xl mx-auto flex flex-col gap-6 pb-24 md:pb-12">
       {/* Page Title */}
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">הגדרות מערכת ופרופיל מתווך</h2>
@@ -67,11 +67,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* 1. AGENT PROFILE & LEGAL SETTINGS */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs space-y-5">
+      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs flex flex-col gap-5">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-              <Shield className="w-5 h-5" />
+              <Shield className="size-5" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">פרטי סוכן ורישיון (חוק המתווכים 1996)</h3>
@@ -85,16 +85,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               onClick={onOpenOnboardingTour}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="size-3.5" />
               <span>הפעל סיור מודרך מחדש</span>
             </button>
           )}
         </div>
 
-        <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+        <form onSubmit={handleSaveProfile} className="flex flex-col gap-4 text-xs">
           {saveSuccess && (
             <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <CheckCircle2 className="size-4 text-emerald-600" />
               <span>הפרופיל עודכן בהצלחה!</span>
             </div>
           )}
@@ -165,10 +165,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* 2. LOCAL DATA SOVEREIGNTY & 1-CLICK BACKUP */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs space-y-5">
+      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs flex flex-col gap-5">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
           <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-            <Database className="w-5 h-5" />
+            <Database className="size-5" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900">ריבונות נתונים וגיבוי מלא (1-Click Backup)</h3>
@@ -178,7 +178,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-lg bg-slate-50 border border-slate-200">
           <div className="flex items-center gap-3">
-            <HardDrive className="w-5 h-5 text-slate-600 shrink-0" />
+            <HardDrive className="size-5 text-slate-600 shrink-0" />
             <div>
               <p className="text-xs font-semibold text-slate-900">גיבוי מלא של כל הנכסים, הלקוחות וההיסטוריה</p>
               <p className="text-[11px] text-slate-500">קובץ JSON מובנה שניתן לשחזור בכל עת</p>
@@ -189,13 +189,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             onClick={handleExportBackup}
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium shadow-xs transition-colors shrink-0"
           >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <Download className="size-3.5 text-slate-500" />
             <span>הורד גיבוי (JSON)</span>
           </button>
         </div>
 
         {/* Clean Slate vs Demo Data Controls */}
-        <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-3">
+        <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h4 className="text-xs font-bold text-slate-900">איפוס לוח חלק (Clean Slate) מול נתוני דוגמה</h4>
@@ -218,7 +218,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               }}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold transition-colors"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="size-3.5" />
               <span>רוקן מאגר והתחל מאפס (Clean Slate)</span>
             </button>
 
@@ -233,14 +233,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               }}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium transition-colors"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <RotateCcw className="size-3.5 text-slate-500" />
               <span>טען מחדש נתוני דוגמה</span>
             </button>
           </div>
 
           {statusMessage && (
             <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in duration-150">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <CheckCircle2 className="size-4 text-emerald-600 flex-shrink-0" />
               <span className="font-medium">{statusMessage}</span>
             </div>
           )}
@@ -263,10 +263,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* 3. OPTIONAL SUPABASE CLOUD SYNC */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs space-y-5">
+      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs flex flex-col gap-5">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
           <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-            <Cloud className="w-5 h-5" />
+            <Cloud className="size-5" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900">חיבור ענן וסנכרון רב-מכשירי (Supabase)</h3>
@@ -274,7 +274,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="space-y-4 text-xs">
+        <div className="flex flex-col gap-4 text-xs">
           <div>
             <label className="text-slate-700 block mb-1 font-medium">Supabase Project URL:</label>
             <input

@@ -47,13 +47,13 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
   }
 
   return (
-    <div className="space-y-4 pb-24 md:pb-12">
+    <div className="flex flex-col gap-4 pb-24 md:pb-12">
       {/* Header and Filter Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="size-4" />
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">מנוע התאמות חכם (Smart Matching Engine)</h2>
@@ -137,12 +137,12 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
       {/* Matches List */}
       {filteredMatches.length === 0 ? (
         <div className="ui-card rounded-xl p-10 text-center text-slate-500">
-          <Sparkles className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+          <Sparkles className="size-8 text-slate-400 mx-auto mb-2" />
           <p className="text-sm font-medium text-slate-800">לא נמצאו התאמות ברף זה</p>
           <p className="text-xs mt-0.5 text-slate-500">נסה לבחור רף התאמה נמוך יותר או הוסף נכסים חדשים.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {filteredMatches.map(match => {
             const prop = match.property
             const lead = match.lead
@@ -155,7 +155,7 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   {/* Score Pill & Summary */}
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center justify-center w-14 h-14 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold flex-shrink-0">
+                    <div className="flex flex-col items-center justify-center size-14 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold flex-shrink-0">
                       <span className="text-lg leading-none">{match.score}%</span>
                       <span className="text-[9px] font-semibold mt-0.5">התאמה</span>
                     </div>
@@ -196,7 +196,7 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
                       onClick={() => handleWhatsAppPitch(match)}
                       className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors"
                     >
-                      <MessageSquare className="w-3.5 h-3.5" />
+                      <MessageSquare className="size-3.5" />
                       <span>שלח הצעה מותאמת בוואטסאפ</span>
                     </button>
                   </div>

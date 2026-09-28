@@ -45,7 +45,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-500'}`} />
+                <Icon className={`size- ${isActive ? 'text-blue-600' : 'text-slate-500'}`} />
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
@@ -75,9 +75,9 @@ export const Navigation: React.FC<NavigationProps> = ({
                 }`}
               >
                 <div className="relative">
-                  <Icon className="w-5 h-5" />
+                  <Icon className="size-" />
                   {tab.badge && (
-                    <span className="absolute -top-1 -right-2 flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-[9px] font-bold bg-blue-600 text-white">
+                    <span className="absolute -top-1 -right-2 flex items-center justify-center min-size- px-1 rounded-full text-[9px] font-bold bg-blue-600 text-white">
                       {tab.badge}
                     </span>
                   )}

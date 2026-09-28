@@ -179,7 +179,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const archivedLeadsCount = leads.filter(l => l.stage === 'closed_lost').length
 
   return (
-    <div className="space-y-4 pb-24 md:pb-12" onClick={() => { setActiveMenuLeadId(null); setActiveWhatsAppLeadId(null); }}>
+    <div className="flex flex-col gap-4 pb-24 md:pb-12" onClick={() => { setActiveMenuLeadId(null); setActiveWhatsAppLeadId(null); }}>
       {/* Top Header & View Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Transaction Type Filter Tabs */}
@@ -222,7 +222,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               }`}
               title="הצג או הסתר עסקאות שנפלו בארכיון"
             >
-              <Archive className="w-3.5 h-3.5" />
+              <Archive className="size-3.5" />
               <span>ארכיון שנפלו ({archivedLeadsCount})</span>
             </button>
           )}
@@ -238,7 +238,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               }`}
               title="תצוגת לוח משפך"
             >
-              <Kanban className="w-4 h-4" />
+              <Kanban className="size-4" />
               <span className="hidden sm:inline">משפך</span>
             </button>
             <button
@@ -248,7 +248,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               }`}
               title="תצוגת טבלה"
             >
-              <TableIcon className="w-4 h-4" />
+              <TableIcon className="size-4" />
               <span className="hidden sm:inline">טבלה</span>
             </button>
           </div>
@@ -257,7 +257,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             onClick={onOpenNewLead}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-xs transition-colors shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             <span>לקוח חדש</span>
           </button>
         </div>
@@ -265,7 +265,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
       {/* Quick Search Bar */}
       <div className="relative">
-        <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
+        <Search className="size-4 text-slate-400 absolute right-3 top-3" />
         <input
           type="text"
           value={searchQuery}
@@ -300,16 +300,16 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 {/* Column Header */}
                 <div className="p-3 border-b border-slate-200/80 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${stage.color}`} />
+                    <span className={`size-2 rounded-full ${stage.color}`} />
                     <h3 className="text-xs font-bold text-slate-800">{stage.title}</h3>
                   </div>
-                  <span className="w-5 h-5 rounded-full bg-white text-slate-700 text-[11px] font-bold flex items-center justify-center border border-slate-200 shadow-2xs">
+                  <span className="size-5 rounded-full bg-white text-slate-700 text-[11px] font-bold flex items-center justify-center border border-slate-200 shadow-2xs">
                     {stageLeads.length}
                   </span>
                 </div>
 
                 {/* Cards Container */}
-                <div className="p-2 space-y-2.5 flex-1 min-h-[350px]">
+                <div className="p-2 flex flex-col gap-2.5 flex-1 min-h-[350px]">
                   {stageLeads.length === 0 ? (
                     <div className="h-28 flex flex-col items-center justify-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-lg m-1">
                       <span>אין לקוחות</span>
@@ -330,7 +330,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                           draggable
                           onDragStart={(e) => handleDragStart(e, lead.id)}
                           onClick={() => onSelectLead(lead)}
-                          className={`bg-white rounded-lg p-3.5 border border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing space-y-2.5 relative ${
+                          className={`bg-white rounded-lg p-3.5 border border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing flex flex-col gap-2.5 relative ${
                             draggingLeadId === lead.id ? 'opacity-40' : ''
                           }`}
                         >
@@ -361,7 +361,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                                   title="מחק לקוח מהמשפך"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="size-3.5" />
                                 </button>
                               )}
 
@@ -376,7 +376,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
                                   title="אפשרויות נוספות"
                                 >
-                                  <MoreVertical className="w-3.5 h-3.5" />
+                                  <MoreVertical className="size-3.5" />
                                 </button>
 
                                 {/* Context Menu Dropdown */}
@@ -398,7 +398,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                         }`}
                                       >
                                         <span>{st.title}</span>
-                                        {lead.stage === st.id && <Check className="w-3 h-3 text-blue-600" />}
+                                        {lead.stage === st.id && <Check className="size-3 text-blue-600" />}
                                       </button>
                                     ))}
 
@@ -410,7 +410,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                       onClick={(e) => handleStartEditNote(e, lead)}
                                       className="w-full text-right px-2 py-1.5 text-xs rounded-md text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                                     >
-                                      <Edit3 className="w-3 h-3 text-slate-400" />
+                                      <Edit3 className="size-3 text-slate-400" />
                                       <span>ערוך הערה פנימית</span>
                                     </button>
 
@@ -421,7 +421,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                         onClick={() => handleSetStage(lead.id, 'closed_lost')}
                                         className="w-full text-right px-2 py-1.5 text-xs rounded-md text-amber-700 hover:bg-amber-50 flex items-center gap-2"
                                       >
-                                        <Archive className="w-3 h-3 text-amber-500" />
+                                        <Archive className="size-3 text-amber-500" />
                                         <span>העבר לארכיון (נפלה)</span>
                                       </button>
                                     ) : (
@@ -430,7 +430,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                         onClick={() => handleSetStage(lead.id, 'discovery')}
                                         className="w-full text-right px-2 py-1.5 text-xs rounded-md text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       >
-                                        <RotateCcw className="w-3 h-3 text-blue-500" />
+                                        <RotateCcw className="size-3 text-blue-500" />
                                         <span>החזר למשפך פעיל</span>
                                       </button>
                                     )}
@@ -445,7 +445,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                         }}
                                         className="w-full text-right px-2 py-1.5 text-xs rounded-md text-red-600 hover:bg-red-50 flex items-center gap-2"
                                       >
-                                        <Trash2 className="w-3 h-3 text-red-500" />
+                                        <Trash2 className="size-3 text-red-500" />
                                         <span>מחק לקוח לצמיתות</span>
                                       </button>
                                     )}
@@ -456,13 +456,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                           </div>
 
                           {/* Budget & Target Area */}
-                          <div className="text-xs space-y-0.5">
+                          <div className="text-xs flex flex-col gap-0.5">
                             <div className="flex items-center justify-between text-slate-600 font-medium">
                               <span>תקציב:</span>
                               <span className="text-slate-900 font-bold">{formatILS(lead.max_budget)}</span>
                             </div>
                             <p className="text-slate-500 text-[11px] truncate flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <MapPin className="size-3 text-slate-400 shrink-0" />
                               <span>{lead.target_cities.join(', ')} {lead.target_neighborhoods.length > 0 && `(${lead.target_neighborhoods.join(', ')})`}</span>
                             </p>
                           </div>
@@ -470,14 +470,14 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                           {/* Inactivity Alert */}
                           {isNeedsAttention && (
                             <div className="flex items-center gap-1.5 text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 px-2 py-1 rounded-md">
-                              <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                              <Clock className="size-3 text-amber-600 shrink-0" />
                               <span>ללא מענה מעל {daysInactive} ימים - כדאי ליצור קשר!</span>
                             </div>
                           )}
 
                           {/* Inline Notes display or editor */}
                           {isEditingNote ? (
-                            <div className="space-y-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex flex-col gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
                               <textarea
                                 value={noteDraft}
                                 onChange={(e) => setNoteDraft(e.target.value)}
@@ -498,7 +498,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   onClick={(e) => handleSaveNote(e, lead.id)}
                                   className="px-2.5 py-0.5 text-[10px] rounded bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-1"
                                 >
-                                  <Check className="w-3 h-3" />
+                                  <Check className="size-3" />
                                   <span>שמור</span>
                                 </button>
                               </div>
@@ -517,7 +517,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                           {matchCount > 0 && (
                             <div className="p-1.5 rounded-md bg-blue-50 border border-blue-200/60 flex items-center justify-between text-[11px] text-blue-700">
                               <span className="flex items-center gap-1 font-semibold">
-                                <Sparkles className="w-3 h-3 text-blue-600" />
+                                <Sparkles className="size-3 text-blue-600" />
                                 <span>{matchCount} נכסים מתאימים</span>
                               </span>
                               <span className="underline font-medium">הצג</span>
@@ -534,7 +534,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                 className="p-1.5 rounded-md bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 transition-colors"
                                 title="חייג ללקוח"
                               >
-                                <Phone className="w-3 h-3" />
+                                <Phone className="size-3" />
                               </a>
 
                               {/* WhatsApp Template Dropdown */}
@@ -560,7 +560,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   className="flex items-center gap-0.5 px-2 py-1 rounded-md bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-[11px] font-medium border border-slate-200 transition-colors"
                                   title="החזר לשלב הקודם"
                                 >
-                                  <ArrowRight className="w-3 h-3" />
+                                  <ArrowRight className="size-3" />
                                   <span>הקודם</span>
                                 </button>
                               )}
@@ -574,7 +574,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   title="השלב הבא"
                                 >
                                   <span>השלב הבא</span>
-                                  <ArrowLeft className="w-3 h-3" />
+                                  <ArrowLeft className="size-3" />
                                 </button>
                               )}
 
@@ -585,7 +585,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                   onClick={() => handleSetStage(lead.id, 'new_lead')}
                                   className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold border border-blue-200 transition-colors"
                                 >
-                                  <RotateCcw className="w-3 h-3" />
+                                  <RotateCcw className="size-3" />
                                   <span>שחזר</span>
                                 </button>
                               )}
@@ -644,7 +644,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       <td className="p-3 text-slate-600">החל מ-{lead.min_rooms} חד׳</td>
                       <td className="p-3">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                          <span className={`w-1.5 h-1.5 rounded-full ${stageObj.color}`} />
+                          <span className={`size-1.5 rounded-full ${stageObj.color}`} />
                           {stageObj.title}
                         </span>
                       </td>
@@ -664,7 +664,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                             className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600"
                             title="חייג"
                           >
-                            <Phone className="w-3.5 h-3.5" />
+                            <Phone className="size-3.5" />
                           </a>
                           <button
                             type="button"
@@ -677,7 +677,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                             className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600"
                             title="וואטסאפ"
                           >
-                            <MessageSquare className="w-3.5 h-3.5" />
+                            <MessageSquare className="size-3.5" />
                           </button>
                           {onDeleteLead && (
                             <button
@@ -686,7 +686,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                               className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-600"
                               title="מחק"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="size-3.5" />
                             </button>
                           )}
                         </div>

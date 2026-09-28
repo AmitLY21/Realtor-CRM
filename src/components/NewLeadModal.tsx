@@ -122,7 +122,7 @@ export const NewLeadModal: React.FC<NewLeadModalProps> = ({
         </DialogHeader>
 
         {/* Form Body */}
-        <form onSubmit={handleSave} className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1 max-h-[80vh]">
+        <form onSubmit={handleSave} className="p-4 sm:p-5 overflow-y-auto flex flex-col gap- flex-1 max-h-[80vh]">
           {errorMsg && (
             <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
               {errorMsg}
@@ -132,7 +132,7 @@ export const NewLeadModal: React.FC<NewLeadModalProps> = ({
           {/* Duplicate Phone Warning */}
           {duplicateWarning && (
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2 text-xs text-amber-800">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="size- text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">מספר טלפון זה כבר קיים במערכת</p>
                 <p className="text-[11px]">הלקוח קיים תחת השם: {duplicateWarning.full_name}</p>

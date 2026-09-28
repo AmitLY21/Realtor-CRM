@@ -161,12 +161,12 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1 flex flex-col gap-5">
           {/* STEP 1: WELCOME & VALUE PROPOSITION */}
           {step === 1 && (
-            <div className="space-y-4 text-center sm:text-right">
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mx-auto sm:mx-0">
-                <Building2 className="w-7 h-7" />
+            <div className="flex flex-col gap-4 text-center sm:text-right">
+              <div className="size-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mx-auto sm:mx-0">
+                <Building2 className="size-7" />
               </div>
 
               <div>
@@ -179,9 +179,9 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-right">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <Sparkles className="size-3.5 text-blue-600 shrink-0" />
                     <span>קליטה מהירה מוואטסאפ</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-normal">
@@ -189,9 +189,9 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <ShieldCheck className="size-3.5 text-blue-600 shrink-0" />
                     <span>הגנת בלעדיות (Anti-Poaching)</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-normal">
@@ -199,9 +199,9 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                    <Users className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <Users className="size-3.5 text-blue-600 shrink-0" />
                     <span>משפך לקוחות והתאמות 85%+</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-normal">
@@ -209,9 +209,9 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                    <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <FileText className="size-3.5 text-blue-600 shrink-0" />
                     <span>הסכמי תיווך כחוק</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-normal">
@@ -224,7 +224,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
           {/* STEP 2: HOW IT WORKS IN 3 STEPS */}
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
                   איך מתחילים לעבוד ביומיום?
@@ -234,12 +234,12 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  <div className="size-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                     1
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="flex flex-col gap-0.5">
                     <h4 className="text-xs font-bold text-slate-900">קלוט נכס ראשון (Smart Paste)</h4>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       לחץ על כפתור ״הוספה״ ובחר ״הדבקה מהירה״. הדבק טקסט חופשי, אמת את השדות ושמור למאגר שלך.
@@ -248,10 +248,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 </div>
 
                 <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  <div className="size-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                     2
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="flex flex-col gap-0.5">
                     <h4 className="text-xs font-bold text-slate-900">נהל את משפך הלקוחות (Kanban)</h4>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       הזן לקוחות מחפשים לפי תקציב ומספר חדרים. המערכת תסמן לך התאמות חמות ותאפשר לשלוח הצעות בוואטסאפ ב-1 קליק.
@@ -260,10 +260,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 </div>
 
                 <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  <div className="size-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                     3
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="flex flex-col gap-0.5">
                     <h4 className="text-xs font-bold text-slate-900">שתף דפי נכס ממותגים</h4>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       הפק דף לקוח מעוצב הכולל את הפרטים שלך כמתווך, גלריית תמונות, ופרטי נכס מסודרים.
@@ -276,7 +276,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
           {/* STEP 3: REALTOR PROFILE FORM */}
           {step === 3 && (
-            <form id="onboarding-profile-form" onSubmit={handleFinish} className="space-y-4">
+            <form id="onboarding-profile-form" onSubmit={handleFinish} className="flex flex-col gap-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
                   הגדרת פרטי המתווך והסוכנות (הבסיס שלך)
@@ -295,7 +295,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-slate-500" />
+                    <User className="size-3.5 text-slate-500" />
                     <span>שם מלא / שם המתווך *</span>
                   </label>
                   <input
@@ -309,7 +309,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                    <Phone className="size-3.5 text-slate-500" />
                     <span>טלפון ישיר לוואטסאפ *</span>
                   </label>
                   <input
@@ -323,7 +323,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-slate-500" />
+                    <Briefcase className="size-3.5 text-slate-500" />
                     <span>שם המשרד / סוכנות</span>
                   </label>
                   <input
@@ -337,7 +337,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                    <BadgeCheck className="w-3.5 h-3.5 text-slate-500" />
+                    <BadgeCheck className="size-3.5 text-slate-500" />
                     <span>מספר רישיון תיווך</span>
                   </label>
                   <input
@@ -351,7 +351,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
                 <div className="sm:col-span-2">
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-slate-500" />
+                    <Mail className="size-3.5 text-slate-500" />
                     <span>דוא״ל ליצירת קשר</span>
                   </label>
                   <input

@@ -35,8 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Logo and Brand */}
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white shadow-xs">
-            <Building2 className="w-4 h-4" />
+          <div className="flex items-center justify-center size- rounded-lg bg-blue-600 text-white shadow-xs">
+            <Building2 className="size-" />
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold tracking-tight text-slate-900">
@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-slate-50 border-slate-200 text-slate-600' 
               : 'bg-amber-50 border-amber-200 text-amber-700'
           }`}>
-            {isOnline ? <Wifi className="w-3.5 h-3.5 text-blue-600" /> : <WifiOff className="w-3.5 h-3.5 text-amber-600" />}
+            {isOnline ? <Wifi className="size- text-blue-600" /> : <WifiOff className="size- text-amber-600" />}
             <span>{isOnline ? 'מחובר ומסונכרן' : 'מצב לא מקוון'}</span>
           </div>
 
@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors text-xs"
             title="חיפוש מהיר (Ctrl+K)"
           >
-            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <Search className="size- text-slate-400" />
             <span className="hidden sm:inline">חיפוש נכס או לקוח...</span>
             <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] bg-white text-slate-500 rounded border border-slate-200">⌘K</kbd>
           </button>
@@ -77,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({
             className="relative p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 transition-colors"
             title="מרכז התראות"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="size-" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold">
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-size- px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setShowAddMenu(!showAddMenu)}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-xs transition-colors active:scale-98"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="size-" />
               <span>הוספה</span>
             </button>
 
@@ -104,8 +104,8 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onOpenSmartPaste}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-800 hover:bg-slate-50 transition-colors text-right"
                 >
-                  <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <ClipboardList className="w-4 h-4" />
+                  <span className="size- rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <ClipboardList className="size-" />
                   </span>
                   <div>
                     <p className="font-semibold text-slate-900">הדבקה מהירה (וואטסאפ)</p>
@@ -116,8 +116,8 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onOpenNewLead}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-800 hover:bg-slate-50 transition-colors text-right"
                 >
-                  <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                    <UserPlus className="w-4 h-4" />
+                  <span className="size- rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                    <UserPlus className="size-" />
                   </span>
                   <div>
                     <p className="font-semibold text-slate-900">לקוח / ליד חדש</p>

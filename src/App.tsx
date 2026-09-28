@@ -161,7 +161,7 @@ export function App() {
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-800">
-        <div className="w-10 h-10 rounded-xl bg-blue-600 animate-pulse mb-3" />
+        <div className="size- rounded-xl bg-blue-600 animate-pulse mb-3" />
         <p className="text-sm font-medium text-slate-600">טוען נתוני מאגר מקומי...</p>
       </div>
     )

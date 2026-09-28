@@ -245,7 +245,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         </DialogHeader>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
+        <div className="p-4 sm:p-5 overflow-y-auto flex flex-col gap-3.5 flex-1">
           {/* Text Area */}
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
@@ -259,7 +259,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors cursor-pointer"
                   title="הדבק אוטומטית הודעה שהועתקה מוואטסאפ"
                 >
-                  <Clipboard className="w-3.5 h-3.5" />
+                  <Clipboard className="size-3.5" />
                   הדבק מהלוח (Clipboard)
                 </button>
                 <button
@@ -275,7 +275,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                   className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
                   title="איך לשתף ישירות מוואטסאפ?"
                 >
-                  <Info className="w-3.5 h-3.5" />
+                  <Info className="size-3.5" />
                 </button>
               </div>
             </div>
@@ -283,7 +283,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             {showShareHelp && (
               <div className="mb-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] leading-relaxed animate-in fade-in duration-100">
                 <span className="font-bold text-blue-950">💡 אפשרויות שיתוף מוואטסאפ: </span>
-                <ul className="list-disc list-inside mt-1 space-y-0.5 text-blue-800">
+                <ul className="list-disc list-inside mt-1 flex flex-col gap-0.5 text-blue-800">
                   <li><strong>אנדרואיד:</strong> התקן את האפליקציה למסך הבית (מתפריט הדפדפן ⁝ &gt; 'התקנת אפליקציה') כדי שתופיע ישירות בלחיצה על "שתף" בוואטסאפ.</li>
                   <li><strong>אייפון (iOS):</strong> מערכת iOS חוסמת שיתוף ישיר ל-PWA – פשוט העתק את ההודעה בוואטסאפ ולחץ כאן <strong>'הדבק מהלוח'</strong> בלחיצה אחת!</li>
                 </ul>
@@ -301,8 +301,8 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
           {/* Missing Fields Warning Banner */}
           {draft && missingFieldList.length > 0 && (
             <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-2.5 text-xs">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="space-y-1.5 flex-1">
+              <AlertTriangle className="size-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1.5 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-amber-900">
                     שים לב: {missingFieldList.length} שדות לא זוהו בוודאות והושארו ריקים
@@ -317,7 +317,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
                   {missingFieldList.map(({ field, label }) => (
                     <span key={field} className="px-2 py-0.5 rounded bg-white/90 border border-amber-300 text-amber-800 text-[10px] font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="size-1.5 rounded-full bg-amber-500" />
                       {label} דורש מילוי
                     </span>
                   ))}
@@ -329,7 +329,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
           {/* Duplicate Warning */}
           {duplicateWarning && (
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2 text-xs text-amber-800">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="size-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">נכס קיים זוהה במאגר שלך</p>
                 <p className="text-[11px] mt-0.5">
@@ -341,10 +341,10 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
           {/* Live Extraction Preview Badges */}
           {draft && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                  <CheckCircle2 className="size-3.5 text-blue-600" />
                   פרטים שחולצו אוטומטית:
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
@@ -402,7 +402,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
               </div>
 
               {/* Manual Review and Completion Inputs */}
-              <div className="pt-2 border-t border-slate-200/80 space-y-2">
+              <div className="pt-2 border-t border-slate-200/80 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800">
                     עריכה והשלמת פרטים ידנית:
@@ -592,7 +592,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
           {/* Validation Error Message */}
           {validationError && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <AlertTriangle className="size-4 text-red-500 flex-shrink-0" />
               <span>{validationError}</span>
             </div>
           )}

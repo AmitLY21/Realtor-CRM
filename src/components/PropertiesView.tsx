@@ -116,15 +116,15 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
   }
 
   return (
-    <div className="space-y-4 pb-24 md:pb-12 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-4 pb-24 md:pb-12 max-w-7xl mx-auto">
       {/* Top Header & Integrated Command Bar */}
-      <div className="ui-panel rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/90 space-y-4 bg-white">
+      <div className="ui-panel rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/90 flex flex-col gap-4 bg-white">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Title & Filter Tabs */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
-                <Building2 className="w-5 h-5" />
+                <Building2 className="size-5" />
               </div>
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">מאגר נכסים</h2>
@@ -172,7 +172,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
             onClick={onOpenSmartPaste}
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-blue-100" />
+            <Sparkles className="size-4 text-blue-100" />
             <span>קליטה מהירה מוואטסאפ</span>
           </button>
         </div>
@@ -180,7 +180,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
         {/* Search Bar & Filter Chips in One Unified Row */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 pt-1 border-t border-slate-100">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="size-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -201,7 +201,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
           {/* Quick Toggle Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs flex-shrink-0">
             <span className="text-slate-400 text-[11px] font-semibold flex items-center gap-1 ml-1">
-              <Filter className="w-3 h-3 text-slate-400" /> סינון:
+              <Filter className="size-3 text-slate-400" /> סינון:
             </span>
             <button
               onClick={() => setFilterMamadOnly(!filterMamadOnly)}
@@ -211,7 +211,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Shield className={`w-3.5 h-3.5 ${filterMamadOnly ? 'text-blue-600' : 'text-slate-400'}`} />
+              <Shield className={`size-3.5 ${filterMamadOnly ? 'text-blue-600' : 'text-slate-400'}`} />
               <span>ממ״ד בלבד</span>
             </button>
             <button
@@ -222,7 +222,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Car className={`w-3.5 h-3.5 ${filterParkingOnly ? 'text-blue-600' : 'text-slate-400'}`} />
+              <Car className={`size-3.5 ${filterParkingOnly ? 'text-blue-600' : 'text-slate-400'}`} />
               <span>חניה בלבד</span>
             </button>
             <button
@@ -242,7 +242,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
       {/* Property Cards Grid */}
       {filtered.length === 0 ? (
         <div className="ui-card rounded-2xl p-12 text-center text-slate-500 bg-white border border-slate-200">
-          <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <Building2 className="size-10 text-slate-300 mx-auto mb-3" />
           <p className="text-base font-bold text-slate-800">לא נמצאו נכסים התואמים את החיפוש</p>
           <p className="text-xs mt-1 text-slate-500">נסה לשנות את מונחי החיפוש או הוסף נכס חדש למאגר.</p>
         </div>
@@ -276,11 +276,11 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                       /* High-End Architectural Gradient Fallback */
                       <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-4 flex flex-col justify-between text-white relative overflow-hidden">
                         <div className="absolute -left-6 -bottom-6 opacity-10 text-white pointer-events-none">
-                          <Building2 className="w-32 h-32" />
+                          <Building2 className="size-32" />
                         </div>
                         <div className="flex items-center justify-between z-10">
                           <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
-                            <Home className="w-3.5 h-3.5 text-blue-400" />
+                            <Home className="size-3.5 text-blue-400" />
                             {getPropertyTypeName(prop.property_type)}
                           </span>
                           <span className="text-[11px] font-mono text-slate-400">
@@ -474,7 +474,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                       className="h-8 w-8 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
                       title="העתק טקסט מעוצב לוואטסאפ"
                     >
-                      {copiedId === prop.id ? <Check className="w-3.5 h-3.5 text-blue-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedId === prop.id ? <Check className="size-3.5 text-blue-600" /> : <Copy className="size-3.5" />}
                     </button>
 
                     <button
@@ -485,7 +485,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                       className="h-8 w-8 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
                       title="דף נכס להדפסה / PDF"
                     >
-                      <Printer className="w-3.5 h-3.5" />
+                      <Printer className="size-3.5" />
                     </button>
 
                     <button
@@ -496,7 +496,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                       className="h-8 w-8 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
                       title="תצוגת דף נכס ללקוח"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="size-3.5" />
                     </button>
 
                     {onDeleteProperty && (
@@ -508,7 +508,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                         className="h-8 w-8 rounded-lg bg-white hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
                         title="מחק נכס מהמאגר"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="size-3.5" />
                       </button>
                     )}
                   </div>
@@ -533,7 +533,7 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                       className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
                       title="ערוך את כל פרטי הנכס וההודעה המקורית"
                     >
-                      <Pencil className="w-3 h-3 text-blue-100" />
+                      <Pencil className="size-3 text-blue-100" />
                       <span>ערוך נכס</span>
                     </button>
                   </div>
