@@ -18,10 +18,10 @@ import {
   Home,
   MessageSquare,
   Pencil,
-  Trash2,
-  AlertTriangle
+  Trash2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface PropertiesViewProps {
   properties: Property[]
@@ -545,49 +545,29 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
       )}
 
       {/* CONFIRM DELETE PROPERTY MODAL */}
-      {propertyToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
-              <div className="p-2 rounded-lg bg-red-50 border border-red-100">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">מחיקת נכס מהמאגר</h3>
-                <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-700 leading-relaxed">
-              האם אתה בטוח שברצונך למחוק את הנכס ברחוב <strong>{propertyToDelete.street} {propertyToDelete.house_number || ''}, {propertyToDelete.city}</strong> מהמאגר?
-              כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
+      <ConfirmDialog
+        open={Boolean(propertyToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setPropertyToDelete(null)
+        }}
+        title="מחיקת נכס מהמאגר"
+        subtitle="פעולה זו בלתי הפיכה"
+        description={
+          propertyToDelete ? (
+            <p>
+              האם אתה בטוח שברצונך למחוק את הנכס ברחוב <strong>{propertyToDelete.street} {propertyToDelete.house_number || ''}, {propertyToDelete.city}</strong> מהמאגר? כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
             </p>
-
-            <div className="pt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setPropertyToDelete(null)}
-                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
-              >
-                ביטול
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onDeleteProperty) {
-                    onDeleteProperty(propertyToDelete.id)
-                  }
-                  setPropertyToDelete(null)
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>אישור מחיקה</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : null
+        }
+        confirmLabel="אישור מחיקה"
+        cancelLabel="ביטול"
+        onConfirm={() => {
+          if (propertyToDelete && onDeleteProperty) {
+            onDeleteProperty(propertyToDelete.id)
+          }
+          setPropertyToDelete(null)
+        }}
+      />
     </div>
   )
 }

@@ -23,9 +23,9 @@ import {
   Phone,
   FileText,
   Copy,
-  Trash2,
-  AlertTriangle
+  Trash2
 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface PropertyPublicViewProps {
   property: Property | null
@@ -422,50 +422,26 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
       </div>
 
       {/* Confirm Delete Property Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
-              <div className="p-2 rounded-lg bg-red-50 border border-red-100">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">מחיקת נכס מהמאגר</h3>
-                <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-700 leading-relaxed">
-              האם אתה בטוח שברצונך למחוק את הנכס ב-<strong>{property.street} {property.house_number || ''}, {property.city}</strong> מהמאגר?
-              כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
-            </p>
-
-            <div className="pt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
-              >
-                ביטול
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onDelete) {
-                    onDelete(property.id)
-                  }
-                  setShowDeleteConfirm(false)
-                  onClose()
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>אישור מחיקה</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="מחיקת נכס מהמאגר"
+        subtitle="פעולה זו בלתי הפיכה"
+        description={
+          <p>
+            האם אתה בטוח שברצונך למחוק את הנכס ב-<strong>{property.street} {property.house_number || ''}, {property.city}</strong> מהמאגר? כל נתוני הנכס, היסטוריית המחירים וההתאמות ללקוחות יימחקו לצמיתות.
+          </p>
+        }
+        confirmLabel="אישור מחיקה"
+        cancelLabel="ביטול"
+        onConfirm={() => {
+          if (onDelete) {
+            onDelete(property.id)
+          }
+          setShowDeleteConfirm(false)
+          onClose()
+        }}
+      />
     </div>
   )
 }

@@ -21,9 +21,9 @@ import {
   Clock,
   Edit3,
   Check,
-  RotateCcw,
-  AlertTriangle
+  RotateCcw
 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface LeadsViewProps {
   leads: Lead[]
@@ -701,49 +701,29 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       )}
 
       {/* CONFIRM DELETE MODAL */}
-      {leadToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl p-5 space-y-4 text-right">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 text-red-600">
-              <div className="p-2 rounded-lg bg-red-50 border border-red-100">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">מחיקת לקוח לצמיתות</h3>
-                <p className="text-xs text-slate-500">פעולה זו בלתי הפיכה</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-700 leading-relaxed">
-              האם אתה בטוח שברצונך למחוק את הלקוח <strong>{leadToDelete.full_name}</strong> מהמערכת?
-              כל ההיסטוריה וההתאמות של לקוח זה יימחקו.
+      <ConfirmDialog
+        open={Boolean(leadToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setLeadToDelete(null)
+        }}
+        title="מחיקת לקוח לצמיתות"
+        subtitle="פעולה זו בלתי הפיכה"
+        description={
+          leadToDelete ? (
+            <p>
+              האם אתה בטוח שברצונך למחוק את הלקוח <strong>{leadToDelete.full_name}</strong> מהמערכת? כל ההיסטוריה וההתאמות של לקוח זה יימחקו.
             </p>
-
-            <div className="pt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setLeadToDelete(null)}
-                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium"
-              >
-                ביטול
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onDeleteLead) {
-                    onDeleteLead(leadToDelete.id)
-                  }
-                  setLeadToDelete(null)
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>אישור מחיקה</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : null
+        }
+        confirmLabel="אישור מחיקה"
+        cancelLabel="ביטול"
+        onConfirm={() => {
+          if (leadToDelete && onDeleteLead) {
+            onDeleteLead(leadToDelete.id)
+          }
+          setLeadToDelete(null)
+        }}
+      />
     </div>
   )
 }

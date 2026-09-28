@@ -7,25 +7,6 @@ import { InAppNotification } from '../types'
 
 export type { InAppNotification }
 
-// LocalStorage backup for offline fallback
-const STORAGE_KEY = 'realtor_in_app_notifications'
-
-export function getNotifications(): InAppNotification[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-export function saveNotifications(notifs: InAppNotification[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifs.slice(0, 50)))
-  } catch {
-    // Ignore quota errors
-  }
-}
 
 /**
  * Web Audio API synthesizer for clean, subtle notification chimes
@@ -97,10 +78,6 @@ export async function sendPushNotification(
     console.warn('Failed saving notification to IndexedDB, using fallback:', err)
   }
 
-  // Backup in localStorage
-  const current = getNotifications()
-  saveNotifications([newNotif, ...current])
-
   // 3. Dispatch system notification if permitted
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
@@ -135,6 +112,4 @@ export async function markAllNotificationsAsRead(): Promise<void> {
   } catch (err) {
     console.warn('Failed marking notifications as read in IndexedDB:', err)
   }
-  const current = getNotifications().map(n => ({ ...n, read: true }))
-  saveNotifications(current)
 }
