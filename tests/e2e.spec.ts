@@ -353,5 +353,31 @@ test.describe('First-time user onboarding tour auto-launch', () => {
     const isOnboarded = await page.evaluate(() => localStorage.getItem('realtor_crm_onboarded'))
     expect(isOnboarded).toBe('true')
   })
+
+  test('11. Web Share Target captures shared WhatsApp message and link into Smart Paste modal', async ({ page }) => {
+    // Navigate with WhatsApp share parameters
+    const shareQuery = '?text=' + encodeURIComponent('דירה חדשה למכירה ברוטשילד 10 ת״א, 3 חדרים 4,100,000 ש"ח') +
+      '&url=' + encodeURIComponent('https://yad2.co.il/item/whatsapp123')
+
+    await page.goto('/' + shareQuery)
+
+    // Modal should automatically pop up with parsed fields
+    await expect(page.locator('text=קליטה מהירה מוואטסאפ / יד2')).toBeVisible()
+
+    // Verify parsed data
+    await expect(page.locator('span:has-text("רוטשילד 10")')).toBeVisible()
+    await expect(page.locator('span:has-text("3 חד׳")').first()).toBeVisible()
+
+    // Verify link was appended to original message
+    const notesTextarea = page.locator('textarea').nth(1)
+    await expect(notesTextarea).toContainText('https://yad2.co.il/item/whatsapp123')
+
+    // Confirm and add to catalog
+    await page.click('button:has-text("אישור והוספה למאגר")')
+
+    // Verify property card shows the full message and link
+    await expect(page.locator('text=רוטשילד 10').first()).toBeVisible()
+    await expect(page.locator('text=https://yad2.co.il/item/whatsapp123').first()).toBeVisible()
+  })
 })
 

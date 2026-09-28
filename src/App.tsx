@@ -61,15 +61,40 @@ export function App() {
         setActiveModal({ type: 'onboarding_tour' })
       }
 
-      // Handle Web Share Target API query params (e.g. /?share=1&text=...)
+      // Handle Web Share Target API query params (text, title, url) from WhatsApp / OS Share sheet
       const params = new URLSearchParams(window.location.search)
-      const shareText = params.get('text') || params.get('title') || params.get('url')
-      if (params.get('share') || shareText) {
-        setActiveModal({ type: 'smart_paste', initialText: shareText || '' })
+      const rawText = params.get('text') || ''
+      const rawUrl = params.get('url') || ''
+      const rawTitle = params.get('title') || ''
+
+      // Combine text and URL if WhatsApp split them or provided both
+      let incomingShare = rawText
+      if (rawUrl && !incomingShare.includes(rawUrl)) {
+        incomingShare = incomingShare ? `${incomingShare}\n${rawUrl}` : rawUrl
+      }
+      if (rawTitle && !incomingShare.includes(rawTitle) && !/whatsapp/i.test(rawTitle)) {
+        incomingShare = `${rawTitle}\n${incomingShare}`
+      }
+
+      if (incomingShare.trim() || params.get('share')) {
+        const finalText = incomingShare.trim()
+        if (finalText) {
+          localStorage.setItem('realtor_pending_share', finalText)
+          setActiveModal({ type: 'smart_paste', initialText: finalText })
+        } else {
+          setActiveModal({ type: 'smart_paste' })
+        }
+
         try {
           window.history.replaceState({}, '', window.location.pathname)
         } catch {
           // Ignore history errors
+        }
+      } else {
+        // Restore pending share if page was refreshed before saving
+        const pending = localStorage.getItem('realtor_pending_share')
+        if (pending) {
+          setActiveModal({ type: 'smart_paste', initialText: pending })
         }
       }
     }

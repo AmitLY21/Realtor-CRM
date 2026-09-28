@@ -179,6 +179,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
       await db.properties.add(newProperty)
       await sendPushNotification('נכס חדש נקלט בהצלחה!', `${newProperty.rooms} חדרים ב${newProperty.street}, ${newProperty.city}`, 'match')
+      localStorage.removeItem('realtor_pending_share')
       onPropertyAdded(newProperty)
       onClose()
       setRawText('')
@@ -187,6 +188,11 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleCloseModal = () => {
+    localStorage.removeItem('realtor_pending_share')
+    onClose()
   }
 
   return (
@@ -204,7 +210,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCloseModal}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -568,7 +574,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         {/* Footer Actions */}
         <div className="p-3.5 sm:p-4 border-t border-slate-200 flex items-center justify-between gap-3 bg-slate-50">
           <button
-            onClick={onClose}
+            onClick={handleCloseModal}
             className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
           >
             ביטול
