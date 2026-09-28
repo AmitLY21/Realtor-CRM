@@ -74,8 +74,8 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
     : `${property.street} ${property.house_number || ''}, ${property.city}`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="print-page w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 print:p-0 print:m-0 print:static print:block print:bg-transparent">
+      <div className="print-page w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden border border-slate-200 print:border-none print:shadow-none print:rounded-none print:max-h-none print:h-auto">
         
         {/* Top Header Bar (Hidden on Print) */}
         <header className="no-print px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
@@ -136,7 +136,7 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
         </header>
 
         {/* Scrollable Document Container */}
-        <div className="overflow-y-auto flex-1 bg-white p-4 sm:p-6 space-y-5 pb-32 sm:pb-8 print:p-0">
+        <div className="overflow-y-auto flex-1 bg-white p-4 sm:p-6 space-y-5 pb-32 sm:pb-8 print:p-0 print:space-y-3 print:pb-0 print:overflow-visible">
           
           {/* Agent Branding Banner */}
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
@@ -215,8 +215,8 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
 
           {/* Gallery Showcase */}
           {property.photos && property.photos.length > 0 && (
-            <div className="space-y-2">
-              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+            <div className="space-y-2 print:space-y-0">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 print:aspect-auto print:h-[200px] print:max-h-[200px] print:rounded-lg">
                 <img
                   src={property.photos[activePhotoIdx]}
                   alt="תמונת נכס ראשית"
@@ -242,16 +242,16 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
                       </button>
                     </div>
 
-                    <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
+                    <div className="no-print absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-medium backdrop-blur-xs">
                       {activePhotoIdx + 1} / {property.photos.length}
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Thumbnails Strip */}
+              {/* Thumbnails Strip (Screen only) */}
               {property.photos.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="no-print flex items-center gap-2 overflow-x-auto pb-1">
                   {property.photos.map((p, idx) => (
                     <button
                       key={idx}
@@ -301,56 +301,56 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
                   )}
                 </button>
               </div>
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-sans shadow-2xs select-text">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-sans shadow-2xs select-text print:p-2.5 print:text-xs print:rounded-lg">
                 {property.notes}
               </div>
             </div>
           )}
 
           {/* Structured Specifications Matrix */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-slate-600">
+          <div className="space-y-3 print:space-y-2">
+            <h4 className="text-xs font-semibold text-slate-600 print:text-[11px]">
               מפרט ופרטי הנכס
             </h4>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-                  <Building2 className="w-4 h-4" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs print:gap-2 print:text-[11px]">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 print:p-2 print:rounded-lg">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 print:p-1.5">
+                  <Building2 className="w-4 h-4 print:w-3.5 print:h-3.5" />
                 </div>
                 <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">מספר חדרים:</span>
-                  <span className="text-sm font-semibold text-slate-900">{property.rooms} חדרים</span>
+                  <span className="text-[11px] text-slate-500 block font-medium print:text-[10px]">מספר חדרים:</span>
+                  <span className="text-sm font-semibold text-slate-900 print:text-xs">{property.rooms} חדרים</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-                  <Layers className="w-4 h-4" />
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 print:p-2 print:rounded-lg">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 print:p-1.5">
+                  <Layers className="w-4 h-4 print:w-3.5 print:h-3.5" />
                 </div>
                 <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">קומה בבניין:</span>
-                  <span className="text-sm font-semibold text-slate-900">קומה {property.floor} מתוך {property.total_floors}</span>
+                  <span className="text-[11px] text-slate-500 block font-medium print:text-[10px]">קומה בבניין:</span>
+                  <span className="text-sm font-semibold text-slate-900 print:text-xs">קומה {property.floor} מתוך {property.total_floors}</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-                  <Maximize2 className="w-4 h-4" />
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 print:p-2 print:rounded-lg">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 print:p-1.5">
+                  <Maximize2 className="w-4 h-4 print:w-3.5 print:h-3.5" />
                 </div>
                 <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">שטח בנוי:</span>
-                  <span className="text-sm font-semibold text-slate-900">{property.sqm} מ״ר</span>
+                  <span className="text-[11px] text-slate-500 block font-medium print:text-[10px]">שטח בנוי:</span>
+                  <span className="text-sm font-semibold text-slate-900 print:text-xs">{property.sqm} מ״ר</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-                  <Calendar className="w-4 h-4" />
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 print:p-2 print:rounded-lg">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 print:p-1.5">
+                  <Calendar className="w-4 h-4 print:w-3.5 print:h-3.5" />
                 </div>
                 <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">תאריך כניסה:</span>
-                  <span className="text-sm font-semibold text-slate-900">{property.vacancy_date || 'מיידי / גמיש'}</span>
+                  <span className="text-[11px] text-slate-500 block font-medium print:text-[10px]">תאריך כניסה:</span>
+                  <span className="text-sm font-semibold text-slate-900 print:text-xs">{property.vacancy_date || 'מיידי / גמיש'}</span>
                 </div>
               </div>
             </div>
@@ -391,7 +391,7 @@ export const PropertyPublicView: React.FC<PropertyPublicViewProps> = ({
           </div>
 
           {/* Legal Disclaimer Box */}
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1 print:p-2 print:text-[10px] print:rounded-lg">
             <p className="font-semibold text-slate-700">הבהרה משפטית (חוק המתווכים במקרקעין):</p>
             <p>
               כל הפרטים המופיעים בדף נכס זה נמסרו ע״י בעל הנכס ובאחריותו הבלעדית. ביקור בנכס כפוף לחתימה על הזמנה בכתב לביצוע פעולת תיווך כחוק לפני הצגת הנכס. ט.ל.ח.

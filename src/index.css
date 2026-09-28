@@ -72,24 +72,73 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Print Styles for Property One-Pager */
+/* Print Styles for Property One-Pager (Exact 1-Page A4 Output) */
 @media print {
-  body {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
     background: white !important;
-    color: black !important;
+    color: #0f172a !important;
     padding: 0 !important;
     margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
+  /* Hide background app layout during print */
+  #root > div > header,
+  #root > div > nav,
+  #root > div > main,
   .no-print {
     display: none !important;
   }
+
+  /* Unset fixed modal container and backdrops */
+  .fixed.inset-0 {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
   .print-only {
     display: block !important;
   }
+
   .print-page {
+    position: static !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
     max-width: 100% !important;
-    padding: 10mm !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-page .overflow-y-auto {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
   }
 }
+

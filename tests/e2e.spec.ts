@@ -189,6 +189,12 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('text=דירה חדשה למכירה בבלעדיות בלב תל אביב!').last()).toBeVisible()
     await expect(page.locator('text=העתק תיאור')).toBeVisible()
     await expect(page.locator('text=הבהרה משפטית (חוק המתווכים במקרקעין):')).toBeVisible()
+
+    // Verify single-page PDF generation in print media
+    await page.emulateMedia({ media: 'print' })
+    const pdf = await page.pdf({ format: 'A4' })
+    const pageMatches = pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)
+    expect(pageMatches ? pageMatches.length : 0).toBe(1)
   })
 
   test('7. Global Search (Cmd+K) modal', async ({ page }) => {
