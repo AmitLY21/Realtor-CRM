@@ -40,7 +40,57 @@ export async function seedInitialDataIfEmpty(force = false) {
   }
 
   const count = await db.properties.count()
-  if (!force && count > 0) return
+  if (!force && count > 0) {
+    // Check if legacy short notes are present on seeded properties and upgrade them
+    const prop1 = await db.properties.get('prop-1')
+    if (prop1 && prop1.notes.startsWith('בעל הנכס: אבי 050-1112233. מפתח אצלי במשרד.')) {
+      await db.properties.update('prop-1', {
+        notes: `*דירה חדשה למכירה בבלעדיות בלב תל אביב!*
+ברחוב בוגרשוב 34, לב העיר המבוקש.
+3.5 חדרים מרווחת ומוארת במיוחד, כ-88 מ"ר, קומה 3 מתוך 5 עם מעלית!
+מרפסת שמש מפנקת היוצאת ישירות מחלל הסלון.
+ממ"ד תקני בדירה, חניה בטאבו ומחסן פרטי צמוד.
+משופצת אדריכלית מהיסוד, פינוי גמיש.
+מחיר שיווק מעודכן: 4,350,000 ש"ח.
+בעל הנכס: אבי 050-1112233 (מפתח במשרד, שת״פ פתוח 50/50).`
+      })
+    }
+    const prop2 = await db.properties.get('prop-2')
+    if (prop2 && prop2.notes.startsWith('סוכן שת״פ: אלון מרימקס 052-4445555.')) {
+      await db.properties.update('prop-2', {
+        notes: `*פנטהאוז יוקרתי ומרהיב בצפון הישן!*
+דיזנגוף 180, במיקום הכי חם בעיר.
+4 חדרים מעוצבת ברמה הגבוהה ביותר, 125 מ"ר בנוי + מרפסת שמש ענקית לנוף פתוח.
+קומה 5 ואחרונה עם מעלית, ממ"ד תקני, 2 חניות צמודות בטאבו ומחסן פרטי.
+מטבח שף איכותי, יחידת הורים מפנקת, מוארת ושקטה במיוחד.
+מחיר מבוקש: 6,800,000 ש"ח.
+סוכן שת״פ: אלון מרימקס 052-4445555. מתואם לסיורים מראש.`
+      })
+    }
+    const prop3 = await db.properties.get('prop-3')
+    if (prop3 && prop3.notes.startsWith('פינוי מיידי, משופצת קומפלט מהיסוד.')) {
+      await db.properties.update('prop-3', {
+        notes: `*להשכרה בבלעדיות במרכז רמת גן!*
+רחוב ביאליק 55, מרכז העיר התוסס, סמוך לכל מוקדי העניין והתחבורה.
+3 חדרים משופצת כחדשה, כ-75 מ"ר, קומה 2 עם מעלית וממ"ד.
+מרפסת שמש חזיתית, כיווני אוויר מעולים, פינוי מיידי.
+חניה מקורה רשומה בטאבו.
+דמי שכירות: 6,400 ש"ח לחודש (ועד בית: 250 ש"ח). דמי תיווך: חודש שכירות + מע״מ.`
+      })
+    }
+    const prop4 = await db.properties.get('prop-4')
+    if (prop4 && prop4.notes.startsWith('בניין חדש יחסית, מושכרת כרגע')) {
+      await db.properties.update('prop-4', {
+        notes: `*הזדמנות נדירה למשקיעים - פלורנטין המתחדשת!*
+רחוב הרצל 82, פלורנטין, תל אביב-יפו.
+2.5 חדרים מוארת ומעוצבת, 60 מ"ר, קומה 2 מתוך 6 בבניין חדיש עם מעלית.
+מרפסת שמש מפנקת וממ"ד תקני בדירה.
+מושכרת כרגע ב-6,800 ש"ח לחודש עם שוכרים מעולים ומוסדרים - תשואה מצוינת!
+מחיר מבוקש: 2,950,000 ש"ח.`
+      })
+    }
+    return
+  }
 
   const now = new Date()
   
@@ -84,7 +134,14 @@ export async function seedInitialDataIfEmpty(force = false) {
       parking_legal: 'tabu',
       public_slug: 'bograshov-3-5',
       hide_exact_address: true,
-      notes: 'בעל הנכס: אבי 050-1112233. מפתח אצלי במשרד. שת״פ פתוח 50/50. לפנות בכל שעה.',
+      notes: `*דירה חדשה למכירה בבלעדיות בלב תל אביב!*
+ברחוב בוגרשוב 34, לב העיר המבוקש.
+3.5 חדרים מרווחת ומוארת במיוחד, כ-88 מ"ר, קומה 3 מתוך 5 עם מעלית!
+מרפסת שמש מפנקת היוצאת ישירות מחלל הסלון.
+ממ"ד תקני בדירה, חניה בטאבו ומחסן פרטי צמוד.
+משופצת אדריכלית מהיסוד, פינוי גמיש.
+מחיר שיווק מעודכן: 4,350,000 ש"ח.
+בעל הנכס: אבי 050-1112233 (מפתח במשרד, שת״פ פתוח 50/50).`,
       photos: [
         'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=800&q=80',
@@ -120,7 +177,13 @@ export async function seedInitialDataIfEmpty(force = false) {
       parking_legal: 'tabu',
       public_slug: 'dizengoff-penthouse-4',
       hide_exact_address: false,
-      notes: 'סוכן שת״פ: אלון מרימקס 052-4445555. מתואם למחר בערב.',
+      notes: `*פנטהאוז יוקרתי ומרהיב בצפון הישן!*
+דיזנגוף 180, במיקום הכי חם בעיר.
+4 חדרים מעוצבת ברמה הגבוהה ביותר, 125 מ"ר בנוי + מרפסת שמש ענקית לנוף פתוח.
+קומה 5 ואחרונה עם מעלית, ממ"ד תקני, 2 חניות צמודות בטאבו ומחסן פרטי.
+מטבח שף איכותי, יחידת הורים מפנקת, מוארת ושקטה במיוחד.
+מחיר מבוקש: 6,800,000 ש"ח.
+סוכן שת״פ: אלון מרימקס 052-4445555. מתואם לסיורים מראש.`,
       photos: [
         'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=800&q=80'
@@ -157,7 +220,12 @@ export async function seedInitialDataIfEmpty(force = false) {
       parking_legal: 'tabu',
       public_slug: 'bialik-rg-3',
       hide_exact_address: true,
-      notes: 'פינוי מיידי, משופצת קומפלט מהיסוד. דמי תיווך: חודש שכירות + מע״מ.',
+      notes: `*להשכרה בבלעדיות במרכז רמת גן!*
+רחוב ביאליק 55, מרכז העיר התוסס, סמוך לכל מוקדי העניין והתחבורה.
+3 חדרים משופצת כחדשה, כ-75 מ"ר, קומה 2 עם מעלית וממ"ד.
+מרפסת שמש חזיתית, כיווני אוויר מעולים, פינוי מיידי.
+חניה מקורה רשומה בטאבו.
+דמי שכירות: 6,400 ש"ח לחודש (ועד בית: 250 ש"ח). דמי תיווך: חודש שכירות + מע״מ.`,
       photos: [
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80'
@@ -193,7 +261,12 @@ export async function seedInitialDataIfEmpty(force = false) {
       parking_legal: 'street_only',
       public_slug: 'herzl-florentin-2-5',
       hide_exact_address: false,
-      notes: 'בניין חדש יחסית, מושכרת כרגע ב-6,800 ש״ח (תשואה מצוינת למשקיעים).',
+      notes: `*הזדמנות נדירה למשקיעים - פלורנטין המתחדשת!*
+רחוב הרצל 82, פלורנטין, תל אביב-יפו.
+2.5 חדרים מוארת ומעוצבת, 60 מ"ר, קומה 2 מתוך 6 בבניין חדיש עם מעלית.
+מרפסת שמש מפנקת וממ"ד תקני בדירה.
+מושכרת כרגע ב-6,800 ש"ח לחודש עם שוכרים מעולים ומוסדרים - תשואה מצוינת!
+מחיר מבוקש: 2,950,000 ש"ח.`,
       photos: [
         'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
       ]

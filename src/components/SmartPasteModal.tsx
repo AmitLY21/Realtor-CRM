@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { parseRawListingText, ParsedPropertyDraft } from '../lib/parser'
 import { checkPropertyDuplicate, db } from '../lib/db'
 import { Property } from '../types'
@@ -77,6 +77,32 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         setDuplicateWarning(dup || null)
       })
     }
+  }
+
+  useEffect(() => {
+    if (isOpen && initialText && initialText.trim() && rawText !== initialText) {
+      queueMicrotask(() => {
+        handleRawTextChange(initialText)
+      })
+    }
+  }, [isOpen, initialText, rawText])
+
+  const resetForm = () => {
+    localStorage.removeItem('realtor_pending_share')
+    setRawText('')
+    setDraft(null)
+    setFormNotes('')
+    setFormCity('')
+    setFormStreet('')
+    setFormHouseNumber('')
+    setFormPrice('')
+    setFormRooms('')
+    setFormFloor('')
+    setFormTotalFloors('')
+    setFormSqm('')
+    setFormNeighborhood('')
+    setValidationError(null)
+    setDuplicateWarning(null)
   }
 
   if (!isOpen) return null
@@ -179,10 +205,9 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
       await db.properties.add(newProperty)
       await sendPushNotification('נכס חדש נקלט בהצלחה!', `${newProperty.rooms} חדרים ב${newProperty.street}, ${newProperty.city}`, 'match')
-      localStorage.removeItem('realtor_pending_share')
+      resetForm()
       onPropertyAdded(newProperty)
       onClose()
-      setRawText('')
     } catch (e) {
       console.error('Failed to add property:', e)
     } finally {
@@ -191,7 +216,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   }
 
   const handleCloseModal = () => {
-    localStorage.removeItem('realtor_pending_share')
+    resetForm()
     onClose()
   }
 

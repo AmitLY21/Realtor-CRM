@@ -177,7 +177,7 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('text=חדרים וגודל:').first()).toBeVisible()
   })
 
-  test('6. Public Client Sheet & Printable PDF View', async ({ page }) => {
+  test('6. Public Client Sheet & Printable PDF View displays full WhatsApp description and parameters', async ({ page }) => {
     await page.click('button:has-text("נכסים")')
     // Click Print button on first card
     const printBtn = page.locator('button[title*="להדפסה"]').first()
@@ -185,6 +185,9 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
 
     await expect(page.locator('text=תצוגת דף נכס להדפסה / PDF')).toBeVisible()
     await expect(page.locator('text=רישיון תיווך מקרקעין')).toBeVisible()
+    await expect(page.locator('text=תיאור הנכס המלא (מהודעת הוואטסאפ המקורית)')).toBeVisible()
+    await expect(page.locator('text=דירה חדשה למכירה בבלעדיות בלב תל אביב!').last()).toBeVisible()
+    await expect(page.locator('text=העתק תיאור')).toBeVisible()
     await expect(page.locator('text=הבהרה משפטית (חוק המתווכים במקרקעין):')).toBeVisible()
   })
 

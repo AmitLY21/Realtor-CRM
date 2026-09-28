@@ -411,8 +411,8 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                     {prop.notes && (
                       <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-slate-600 flex items-center gap-1.5">
-                            <MessageSquare className="size-3 text-slate-500" />
+                          <span className="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+                            <MessageSquare className="size-3 text-blue-600 shrink-0" />
                             <span>הודעת מקור מוואטסאפ:</span>
                           </span>
                           <button
@@ -423,17 +423,23 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                               setCopiedNoteId(prop.id)
                               setTimeout(() => setCopiedNoteId(null), 2000)
                             }}
-                            className="text-[10px] font-medium text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200"
                             title="העתק תוכן הודעה מלא"
                           >
                             {copiedNoteId === prop.id ? 'הועתק!' : 'העתק'}
                           </button>
                         </div>
                         <p 
-                          className={`text-slate-600 text-[11px] leading-relaxed whitespace-pre-wrap cursor-text select-text ${
-                            expandedNotes[prop.id] ? '' : 'line-clamp-2'
+                          className={`text-slate-700 text-[11px] leading-relaxed whitespace-pre-wrap cursor-pointer select-text transition-all ${
+                            expandedNotes[prop.id] ? '' : 'line-clamp-3'
                           }`}
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (prop.notes.length > 70) {
+                              setExpandedNotes(prev => ({ ...prev, [prop.id]: !prev[prop.id] }))
+                            }
+                          }}
+                          title={expandedNotes[prop.id] ? 'לחץ לצמצום' : 'לחץ להרחבת ההודעה'}
                         >
                           {prop.notes}
                         </p>
