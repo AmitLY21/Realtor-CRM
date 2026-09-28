@@ -5,6 +5,11 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.BASE_PATH || '/',
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
   plugins: [
     react(),
     VitePWA({
