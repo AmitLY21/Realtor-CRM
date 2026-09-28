@@ -81,6 +81,24 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
 
     // Should switch to Properties tab and show the new property
     await expect(page.locator('text=בוגרשוב 52').first()).toBeVisible()
+
+    // Verify full original message is displayed in the property card
+    await expect(page.locator('text=הודעת מקור מוואטסאפ:').first()).toBeVisible()
+    await expect(page.locator('text=רונן 054-1234567').first()).toBeVisible()
+
+    // Test "ערוך נכס" modal to modify everything
+    const editBtn = page.locator('button:has-text("ערוך נכס")').first()
+    await editBtn.click()
+    await expect(page.locator('text=עריכת נכס ועדכון פרטים מלאים')).toBeVisible()
+
+    // Modify a field (e.g. neighborhood and notes)
+    const neighborhoodInput = page.locator('input[placeholder*="שם השכונה"]')
+    await neighborhoodInput.fill('לב תל אביב המתחדש')
+
+    // Save changes
+    await page.click('button:has-text("שמור שינויים")')
+    await expect(page.locator('text=עריכת נכס ועדכון פרטים מלאים')).not.toBeVisible()
+    await expect(page.locator('text=לב תל אביב המתחדש').first()).toBeVisible()
   })
 
   test('3b. Smart Paste informs user about blank unassured fields and allows manual completion before saving', async ({ page }) => {

@@ -44,9 +44,11 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   const [formTotalFloors, setFormTotalFloors] = useState<string>(initialDraft?.total_floors !== undefined ? String(initialDraft.total_floors) : '')
   const [formSqm, setFormSqm] = useState<string>(initialDraft?.sqm !== undefined ? String(initialDraft.sqm) : '')
   const [formNeighborhood, setFormNeighborhood] = useState(initialDraft?.neighborhood || '')
+  const [formNotes, setFormNotes] = useState(initialDraft?.raw_text || initialText || '')
 
   const handleRawTextChange = (text: string) => {
     setRawText(text)
+    setFormNotes(text)
     if (!text.trim()) {
       setDraft(null)
       setDuplicateWarning(null)
@@ -169,7 +171,7 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         parking_legal: draft.parking_legal,
         public_slug: `${formStreet.trim().replace(/\s+/g, '-')}-${Date.now().toString(36)}`,
         hide_exact_address: true, // Default to protected anti-poaching mode
-        notes: draft.raw_text,
+        notes: formNotes.trim() || draft.raw_text,
         photos: [
           'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
         ]
@@ -533,6 +535,20 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
                           ? 'border-amber-300 bg-amber-50/40 text-amber-900 placeholder-amber-400 focus:bg-white focus:border-amber-500'
                           : 'border-slate-200 bg-white text-slate-900 focus:border-blue-600'
                       }`}
+                    />
+                  </div>
+
+                  {/* Original Message / Notes Editor */}
+                  <div className="sm:col-span-2">
+                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                      הודעת מקור מוואטסאפ / הערות סוכן פרטיות (נשמר ומוצג בכרטיס הנכס)
+                    </label>
+                    <textarea
+                      value={formNotes}
+                      onChange={(e) => setFormNotes(e.target.value)}
+                      placeholder="הודעת מקור..."
+                      rows={3}
+                      className="w-full p-2 rounded-lg text-xs border border-slate-200 bg-white text-slate-900 focus:border-blue-600 resize-y leading-relaxed font-sans"
                     />
                   </div>
                 </div>

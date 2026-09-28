@@ -165,6 +165,7 @@ export type ActiveModal =
   | { type: 'search' }
   | { type: 'notifications' }
   | { type: 'price_update'; property: Property }
+  | { type: 'edit_property'; property: Property }
   | { type: 'public_preview'; property: Property; isPrintMode: boolean }
   | { type: 'onboarding_tour' }
   | null

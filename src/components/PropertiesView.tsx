@@ -15,7 +15,9 @@ import {
   ExternalLink,
   Shield,
   Car,
-  Home
+  Home,
+  MessageSquare,
+  Pencil
 } from 'lucide-react'
 
 interface PropertiesViewProps {
@@ -26,6 +28,7 @@ interface PropertiesViewProps {
   onOpenPrintSheet: (property: Property) => void
   onToggleAntiPoach: (propertyId: string, currentVal: boolean) => void
   onUpdatePrice: (property: Property) => void
+  onEditProperty: (property: Property) => void
   matchesMap: Record<string, number> // propertyId -> count of matching leads
 }
 
@@ -37,6 +40,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
   onOpenPrintSheet,
   onToggleAntiPoach,
   onUpdatePrice,
+  onEditProperty,
   matchesMap
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,6 +49,7 @@ export const PropertiesView: React.FC<PropertiesViewProps> = ({
   const [filterParkingOnly, setFilterParkingOnly] = useState(false)
   const [filterExclusiveOnly, setFilterExclusiveOnly] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null)
 
   // Filter properties
   const filtered = properties.filter(p => {
@@ -320,6 +325,37 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                         <span className="text-[11px] underline">הצג</span>
                       </div>
                     )}
+
+                    {/* Full WhatsApp Message / Property Notes */}
+                    {prop.notes && (
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                            הודעת מקור מוואטסאפ:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigator.clipboard.writeText(prop.notes)
+                              setCopiedNoteId(prop.id)
+                              setTimeout(() => setCopiedNoteId(null), 2000)
+                            }}
+                            className="text-[10px] text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                            title="העתק תוכן הודעה מלא"
+                          >
+                            {copiedNoteId === prop.id ? 'הועתק!' : 'העתק'}
+                          </button>
+                        </div>
+                        <p 
+                          className="text-slate-600 text-[11px] leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto cursor-text select-text"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {prop.notes}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -360,15 +396,29 @@ ${prop.vacancy_date ? `פינוי: ${prop.vacancy_date}` : 'פינוי: מייד
                     </button>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onUpdatePrice(prop)
-                    }}
-                    className="px-2.5 py-1 rounded-md bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 border border-slate-200 transition-colors"
-                  >
-                    עדכן מחיר
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEditProperty(prop)
+                      }}
+                      className="px-2.5 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-xs font-semibold text-blue-700 border border-blue-200 transition-colors flex items-center gap-1"
+                      title="ערוך את כל פרטי הנכס וההודעה המקורית"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      <span>ערוך נכס</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onUpdatePrice(prop)
+                      }}
+                      className="px-2.5 py-1 rounded-md bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 border border-slate-200 transition-colors"
+                    >
+                      עדכן מחיר
+                    </button>
+                  </div>
                 </div>
               </div>
             )

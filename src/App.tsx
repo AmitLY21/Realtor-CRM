@@ -26,6 +26,7 @@ import { SmartPasteModal } from './components/SmartPasteModal'
 import { NewLeadModal } from './components/NewLeadModal'
 import { PropertyPublicView } from './components/PropertyPublicView'
 import { PriceUpdateModal } from './components/PriceUpdateModal'
+import { EditPropertyModal } from './components/EditPropertyModal'
 import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { NotificationCenter } from './components/NotificationCenter'
 import { OnboardingTourModal } from './components/OnboardingTourModal'
@@ -98,6 +99,12 @@ export function App() {
     if (updated) {
       await sendPushNotification('ירידת מחיר עודכנה!', `${updated.street}: המחיר עודכן ל-${newPrice.toLocaleString()} ₪`, 'price_drop')
     }
+  }
+
+  const handleUpdateProperty = async (updated: Property) => {
+    await db.properties.put(updated)
+    await sendPushNotification('נכס עודכן בהצלחה', `${updated.street} ${updated.house_number || ''}, ${updated.city}`, 'system')
+    setActiveModal(null)
   }
 
   const handleUpdateReminderStatus = async (reminderId: string, isCompleted: boolean) => {
@@ -184,6 +191,7 @@ export function App() {
             }}
             onToggleAntiPoach={handleToggleAntiPoach}
             onUpdatePrice={(prop) => setActiveModal({ type: 'price_update', property: prop })}
+            onEditProperty={(prop) => setActiveModal({ type: 'edit_property', property: prop })}
             matchesMap={propMatchesMap}
           />
         )}
@@ -257,6 +265,13 @@ export function App() {
         isOpen={activeModal?.type === 'price_update'}
         onClose={() => setActiveModal(null)}
         onPriceUpdated={handlePriceUpdate}
+      />
+
+      <EditPropertyModal
+        property={activeModal?.type === 'edit_property' ? activeModal.property : null}
+        isOpen={activeModal?.type === 'edit_property'}
+        onClose={() => setActiveModal(null)}
+        onSave={handleUpdateProperty}
       />
 
       <GlobalSearchModal
