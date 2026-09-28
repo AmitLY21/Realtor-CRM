@@ -3,9 +3,12 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
+const rawBase = process.env.BASE_PATH || '/'
+const basePath = rawBase.endsWith('/') ? rawBase : `${rawBase}/`
+
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.BASE_PATH || '/',
+  base: basePath,
   server: {
     port: 5174,
     strictPort: true,
@@ -25,78 +28,80 @@ export default defineConfig({
         orientation: 'portrait',
         dir: 'rtl',
         lang: 'he',
+        scope: basePath,
+        start_url: basePath,
         icons: [
           {
-            src: '/icons/16x16.png',
+            src: `${basePath}icons/16x16.png`,
             sizes: '16x16',
             type: 'image/png'
           },
           {
-            src: '/icons/32x32.png',
+            src: `${basePath}icons/32x32.png`,
             sizes: '32x32',
             type: 'image/png'
           },
           {
-            src: '/icons/72x72.png',
+            src: `${basePath}icons/72x72.png`,
             sizes: '72x72',
             type: 'image/png'
           },
           {
-            src: '/icons/96x96.png',
+            src: `${basePath}icons/96x96.png`,
             sizes: '96x96',
             type: 'image/png'
           },
           {
-            src: '/icons/120x120.png',
+            src: `${basePath}icons/120x120.png`,
             sizes: '120x120',
             type: 'image/png'
           },
           {
-            src: '/icons/128x128.png',
+            src: `${basePath}icons/128x128.png`,
             sizes: '128x128',
             type: 'image/png'
           },
           {
-            src: '/icons/144x144.png',
+            src: `${basePath}icons/144x144.png`,
             sizes: '144x144',
             type: 'image/png'
           },
           {
-            src: '/icons/152x152.png',
+            src: `${basePath}icons/152x152.png`,
             sizes: '152x152',
             type: 'image/png'
           },
           {
-            src: '/icons/180x180.png',
+            src: `${basePath}icons/180x180.png`,
             sizes: '180x180',
             type: 'image/png'
           },
           {
-            src: '/icons/192x192.png',
+            src: `${basePath}icons/192x192.png`,
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/icons/384x384.png',
+            src: `${basePath}icons/384x384.png`,
             sizes: '384x384',
             type: 'image/png'
           },
           {
-            src: '/icons/512x512.png',
+            src: `${basePath}icons/512x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/icons/512x512.png',
+            src: `${basePath}icons/512x512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
           }
         ],
         share_target: {
-          action: '/?share=1',
+          action: `${basePath}?share=1`,
           method: 'GET',
           params: {
             title: 'title',

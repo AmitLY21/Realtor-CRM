@@ -160,7 +160,7 @@ export interface MatchMatrixResult {
 }
 
 export type ActiveModal =
-  | { type: 'smart_paste' }
+  | { type: 'smart_paste'; initialText?: string }
   | { type: 'new_lead' }
   | { type: 'search' }
   | { type: 'notifications' }

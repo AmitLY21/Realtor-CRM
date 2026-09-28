@@ -176,4 +176,75 @@ test.describe('Deterministic Israeli Real Estate Text Parser Suite', () => {
       expect.arrayContaining(['רחוב', 'עיר', 'קומה', 'שטח מ״ר'])
     )
   })
+
+  test('Example 8: Israeli city initials recognition (כ״ס, כ"ס, בת״א, בר״ג, בפ״ת, בראשל״צ, בהוד״ש, ברה״ש, בי-ם)', () => {
+    // 1. כ״ס (Kfar Saba) with city-first format
+    const p1 = parseRawListingText(`כ״ס, תל חי 94\n4 חדרים, קומה 2, מחיר 2,650,000 ש"ח`)
+    expect(p1.city).toBe('כפר סבא')
+    expect(p1.street).toBe('תל חי')
+    expect(p1.house_number).toBe('94')
+    expect(p1.rooms).toBe(4)
+    expect(p1.price).toBe(2650000)
+
+    // 2. בת״א (Tel Aviv) with preposition
+    const p2 = parseRawListingText(`למכירה בת״א, דיזנגוף 100\n3 חדרים 85 מ״ר\nמחיר 4.2M ש״ח`)
+    expect(p2.city).toBe('תל אביב-יפו')
+    expect(p2.street).toBe('דיזנגוף')
+    expect(p2.house_number).toBe('100')
+    expect(p2.rooms).toBe(3)
+    expect(p2.price).toBe(4200000)
+
+    // 3. בכ״ס with dash
+    const p3 = parseRawListingText(`דירת 5 חד' בכ״ס - תל חי 94\nמחיר 3.4M`)
+    expect(p3.city).toBe('כפר סבא')
+    expect(p3.street).toBe('תל חי')
+    expect(p3.house_number).toBe('94')
+
+    // 4. בר״ג (Ramat Gan)
+    const p4 = parseRawListingText(`דירה בר״ג ביאליק 15, 3 חדרים 2.1M`)
+    expect(p4.city).toBe('רמת גן')
+    expect(p4.street).toBe('ביאליק')
+    expect(p4.house_number).toBe('15')
+
+    // 5. בפ״ת (Petah Tikva)
+    const p5 = parseRawListingText(`למכירה בפ״ת, דירת 4 חדרים 2,350,000 ₪`)
+    expect(p5.city).toBe('פתח תקווה')
+
+    // 6. בראשל״צ (Rishon LeZion)
+    const p6 = parseRawListingText(`בלעדי בראשל״צ! 5 חדרים מחיר 3.8M`)
+    expect(p6.city).toBe('ראשון לציון')
+
+    // 7. בהוד״ש (Hod HaSharon)
+    const p7 = parseRawListingText(`דופלקס בהוד״ש, 6 חדרים`)
+    expect(p7.city).toBe('הוד השרון')
+
+    // 8. ברה״ש (Ramat HaSharon)
+    const p8 = parseRawListingText(`דירת גן ברה״ש, 5 חד'`)
+    expect(p8.city).toBe('רמת השרון')
+
+    // 9. בי-ם (Jerusalem)
+    const p9 = parseRawListingText(`דירה למכירה בי-ם, 3 חדרים`)
+    expect(p9.city).toBe('ירושלים')
+
+    // 10. כפ״ס (Wiktionary variant for Kfar Saba)
+    const p10 = parseRawListingText(`דירה מהממת בכפ״ס, 4 חד' 2.7M`)
+    expect(p10.city).toBe('כפר סבא')
+
+    // 11. ראל״צ (Wiktionary variant for Rishon LeZion)
+    const p11 = parseRawListingText(`פנטהאוז בראל״צ, 5 חדרים`)
+    expect(p11.city).toBe('ראשון לציון')
+
+    // 12. ברמה״ש (Ramat HaSharon)
+    const p12 = parseRawListingText(`דירה למכירה ברמה״ש, 4 חדרים`)
+    expect(p12.city).toBe('רמת השרון')
+
+    // 13. בב״ב (Bnei Brak)
+    const p13 = parseRawListingText(`דירה בב״ב, 3 חדרים`)
+    expect(p13.city).toBe('בני ברק')
+
+    // 14. בב״ש (Beer Sheva)
+    const p14 = parseRawListingText(`להשקעה בב״ש, 3 חד' 900,000 ש"ח`)
+    expect(p14.city).toBe('באר שבע')
+  })
 })
+

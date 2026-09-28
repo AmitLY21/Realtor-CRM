@@ -7,36 +7,43 @@ import {
   X, 
   Sparkles, 
   CheckCircle2, 
-  AlertTriangle 
+  AlertTriangle,
+  Clipboard,
+  Info
 } from 'lucide-react'
 
 interface SmartPasteModalProps {
   isOpen: boolean
+  initialText?: string
   onClose: () => void
   onPropertyAdded: (newProp: Property) => void
 }
 
 export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   isOpen,
+  initialText,
   onClose,
   onPropertyAdded
 }) => {
-  const [rawText, setRawText] = useState('')
-  const [draft, setDraft] = useState<ParsedPropertyDraft | null>(null)
+  const initialDraft = initialText ? parseRawListingText(initialText) : null
+
+  const [rawText, setRawText] = useState(initialText || '')
+  const [draft, setDraft] = useState<ParsedPropertyDraft | null>(initialDraft)
   const [duplicateWarning, setDuplicateWarning] = useState<Property | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showShareHelp, setShowShareHelp] = useState(false)
 
   // Editable fields state for manual completion/corrections
-  const [formCity, setFormCity] = useState('')
-  const [formStreet, setFormStreet] = useState('')
-  const [formHouseNumber, setFormHouseNumber] = useState('')
-  const [formPrice, setFormPrice] = useState<string>('')
-  const [formRooms, setFormRooms] = useState<string>('')
-  const [formFloor, setFormFloor] = useState<string>('')
-  const [formTotalFloors, setFormTotalFloors] = useState<string>('')
-  const [formSqm, setFormSqm] = useState<string>('')
-  const [formNeighborhood, setFormNeighborhood] = useState('')
+  const [formCity, setFormCity] = useState(initialDraft?.city || '')
+  const [formStreet, setFormStreet] = useState(initialDraft?.street || '')
+  const [formHouseNumber, setFormHouseNumber] = useState(initialDraft?.house_number || '')
+  const [formPrice, setFormPrice] = useState<string>(initialDraft?.price !== undefined ? String(initialDraft.price) : '')
+  const [formRooms, setFormRooms] = useState<string>(initialDraft?.rooms !== undefined ? String(initialDraft.rooms) : '')
+  const [formFloor, setFormFloor] = useState<string>(initialDraft?.floor !== undefined ? String(initialDraft.floor) : '')
+  const [formTotalFloors, setFormTotalFloors] = useState<string>(initialDraft?.total_floors !== undefined ? String(initialDraft.total_floors) : '')
+  const [formSqm, setFormSqm] = useState<string>(initialDraft?.sqm !== undefined ? String(initialDraft.sqm) : '')
+  const [formNeighborhood, setFormNeighborhood] = useState(initialDraft?.neighborhood || '')
 
   const handleRawTextChange = (text: string) => {
     setRawText(text)
@@ -80,6 +87,19 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   if (!formRooms.trim() || Number(formRooms) <= 0) missingFieldList.push({ field: 'rooms', label: 'חדרים' })
   if (!formFloor.trim()) missingFieldList.push({ field: 'floor', label: 'קומה' })
   if (!formSqm.trim() || Number(formSqm) <= 0) missingFieldList.push({ field: 'sqm', label: 'שטח מ״ר' })
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
+        const text = await navigator.clipboard.readText()
+        if (text && text.trim()) {
+          handleRawTextChange(text)
+        }
+      }
+    } catch (err) {
+      console.warn('Clipboard read failed or permission denied:', err)
+    }
+  }
 
   const handleSampleWhatsApp = () => {
     const sample = `*דירה חדשה למכירה בבלעדיות בלב תל אביב!*
@@ -193,18 +213,47 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
           {/* Text Area */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <label className="text-xs font-semibold text-slate-700">
                 הדבק כאן את הודעת הנכס:
               </label>
-              <button
-                type="button"
-                onClick={handleSampleWhatsApp}
-                className="text-xs text-blue-600 hover:underline font-medium"
-              >
-                טען דוגמה מוואטסאפ שת״פ
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePasteFromClipboard}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors cursor-pointer"
+                  title="הדבק אוטומטית הודעה שהועתקה מוואטסאפ"
+                >
+                  <Clipboard className="w-3.5 h-3.5" />
+                  הדבק מהלוח (Clipboard)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSampleWhatsApp}
+                  className="text-xs text-slate-500 hover:text-blue-600 hover:underline font-medium cursor-pointer"
+                >
+                  טען דוגמה מוואטסאפ שת״פ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowShareHelp(!showShareHelp)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
+                  title="איך לשתף ישירות מוואטסאפ?"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
+
+            {showShareHelp && (
+              <div className="mb-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] leading-relaxed animate-in fade-in duration-100">
+                <span className="font-bold text-blue-950">💡 אפשרויות שיתוף מוואטסאפ: </span>
+                <ul className="list-disc list-inside mt-1 space-y-0.5 text-blue-800">
+                  <li><strong>אנדרואיד:</strong> התקן את האפליקציה למסך הבית (מתפריט הדפדפן ⁝ &gt; 'התקנת אפליקציה') כדי שתופיע ישירות בלחיצה על "שתף" בוואטסאפ.</li>
+                  <li><strong>אייפון (iOS):</strong> מערכת iOS חוסמת שיתוף ישיר ל-PWA – פשוט העתק את ההודעה בוואטסאפ ולחץ כאן <strong>'הדבק מהלוח'</strong> בלחיצה אחת!</li>
+                </ul>
+              </div>
+            )}
             <textarea
               value={rawText}
               onChange={(e) => handleRawTextChange(e.target.value)}

@@ -62,8 +62,14 @@ export function App() {
 
       // Handle Web Share Target API query params (e.g. /?share=1&text=...)
       const params = new URLSearchParams(window.location.search)
-      if (params.get('share') || params.get('text')) {
-        setActiveModal({ type: 'smart_paste' })
+      const shareText = params.get('text') || params.get('title') || params.get('url')
+      if (params.get('share') || shareText) {
+        setActiveModal({ type: 'smart_paste', initialText: shareText || '' })
+        try {
+          window.history.replaceState({}, '', window.location.pathname)
+        } catch {
+          // Ignore history errors
+        }
       }
     }
     init()
@@ -223,6 +229,7 @@ export function App() {
       {/* Modals & Drawers */}
       <SmartPasteModal
         isOpen={activeModal?.type === 'smart_paste'}
+        initialText={activeModal?.type === 'smart_paste' ? activeModal.initialText : undefined}
         onClose={() => setActiveModal(null)}
         onPropertyAdded={(_newProp) => {
           setActiveTab('properties')

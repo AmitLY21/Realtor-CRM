@@ -1,5 +1,5 @@
 import { ParkingType, ParkingLegal, PropertyType, TransactionType } from '../types'
-import { ISRAELI_STREET_REGISTRY, ISRAELI_CITY_ABBREVIATIONS, lookupNeighborhoodByStreet } from './geoRegistry'
+import { ISRAELI_STREET_REGISTRY, lookupNeighborhoodByStreet, detectIsraeliCity } from './geoRegistry'
 
 export interface ParsedPropertyDraft {
   transaction_type: TransactionType
@@ -269,51 +269,81 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
   let street = ''
   let house_number: string | undefined
 
-  // Step 1: Detect City Abbreviations in text (e.g. כ"ס -> כפר סבא)
-  for (const [abbr, fullCity] of Object.entries(ISRAELI_CITY_ABBREVIATIONS)) {
-    const escaped = abbr.replace(/["״]/g, '["״]?')
-    const regex = new RegExp(`(?:^|[\\s,.-])${escaped}(?:[\\s,.-]|$)`, 'i')
-    if (regex.test(text)) {
-      city = fullCity
-      extractedFields.push(`עיר: ${city}`)
-      break
-    }
+  // Step 1: Detect City and City Abbreviations (e.g. כ"ס, כ״ס, בת"א, בר"ג, ראשל"צ, בי-ם)
+  const detectedCity = detectIsraeliCity(text)
+  if (detectedCity) {
+    city = detectedCity.city
+    extractedFields.push(`עיר: ${city}`)
   }
 
-  // Step 2: Address with city abbreviation (e.g. "תל חי 94 כ"ס")
-  const streetNumCityMatch = text.match(/([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})\s*(?:,|-)?\s*(כ"ס|כ״ס|ת"א|ת״א|ר"ג|ר״ג|פ"ת|פ״ת|ראשל"צ|ראשל״צ|כפר סבא|תל אביב|רמת גן|גבעתיים|הרצליה|רעננה|הוד השרון|פתח תקווה|ירושלים|חיפה|נתניה)/i)
-  if (streetNumCityMatch) {
-    const candidateStreet = streetNumCityMatch[1].trim()
-    if (!candidateStreet.includes('קומה') && !candidateStreet.includes('חדר') && !candidateStreet.includes('שיווק')) {
-      street = candidateStreet
-      house_number = streetNumCityMatch[2]
-      const cityAbbr = streetNumCityMatch[3]
-      if (!city && ISRAELI_CITY_ABBREVIATIONS[cityAbbr]) {
-        city = ISRAELI_CITY_ABBREVIATIONS[cityAbbr]
+  // Step 2: Pattern A - City Prefix followed by Street + House Number (e.g. "כ״ס, תל חי 94", "בכ״ס - תל חי 94", "ת״א דיזנגוף 100")
+  if (!street) {
+    const cityFirstRegex = /(?:^|[\n\r])\s*(?:[במלק]?)(?:כ["״'׳]?ס|ת["״'׳]?א(?:-יפו)?|ר["״'׳]?ג|פ["״'׳]?ת|ראשל["״'׳]?צ|הוד["״'׳]?ש|רה["״'׳]?ש|גב["״'׳]?ש|ק["״'׳]?א|נ["״'׳]?צ|י[-–]ם|כפר[\s-]סבא|תל[\s-]אביב(?:[\s-]+יפו)?|רמת[\s-]גן|פתח[\s-]תקוו?ה|ראשון[\s-]לציון|הוד[\s-]השרון|גבעתיים|הרצליה|רעננה|ירושלים|חולון|בת[\s-]ים|נתניה|חיפה)[\s,.:;-]+(?:ברחוב|רחוב|ב?שד(?:רות)?)?\s*([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})(?:[\s,.:;-]|$)/i
+    const match = text.match(cityFirstRegex)
+    if (match) {
+      const cand = match[1].trim()
+      if (!cand.includes('קומה') && !cand.includes('חדר') && !cand.includes('שיווק') && !cand.includes('למכירה') && !cand.includes('להשכרה')) {
+        street = cand
+        house_number = match[2]
       }
     }
   }
 
-  // Step 3: Match from known ISRAELI_STREET_REGISTRY
+  // Step 3: Pattern B - Street + House Number followed by City / Abbr (e.g. "תל חי 94 כ"ס", "דיזנגוף 100 בת״א")
+  if (!street) {
+    const streetCityRegex = /([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})\s*(?:,|-)?\s*(?:[במלק]?)(כ["״'׳]ס|ת["״'׳]א(?:-יפו)?|ר["״'׳]ג|פ["״'׳]ת|ראשל["״'׳]צ|הוד["״'׳]ש|רה["״'׳]ש|גב["״'׳]ש|ק["״'׳]א|נ["״'׳]צ|י[-–]ם|כפר[\s-]סבא|תל[\s-]אביב|רמת[\s-]גן|גבעתיים|הרצליה|רעננה|הוד[\s-]השרון|פתח[\s-]תקוו?ה|ראשון[\s-]לציון|ירושלים|חיפה|נתניה|חולון|בת[\s-]ים)/i
+    const match = text.match(streetCityRegex)
+    if (match) {
+      const cand = match[1].trim()
+      if (!cand.includes('קומה') && !cand.includes('חדר') && !cand.includes('שיווק') && !cand.includes('למכירה') && !cand.includes('להשכרה')) {
+        street = cand
+        house_number = match[2]
+        if (!city) {
+          const detectedFromMatch = detectIsraeliCity(match[3])
+          if (detectedFromMatch) {
+            city = detectedFromMatch.city
+            extractedFields.push(`עיר: ${city}`)
+          }
+        }
+      }
+    }
+  }
+
+  // Step 4: Known Street Registry search
+  // Prioritize streets matching detected city first
+  if (!street && city) {
+    for (const entry of ISRAELI_STREET_REGISTRY) {
+      if (entry.city === city && text.includes(entry.street)) {
+        street = entry.street
+        neighborhood = entry.neighborhood
+        break
+      }
+    }
+  }
   if (!street) {
     for (const entry of ISRAELI_STREET_REGISTRY) {
       if (text.includes(entry.street)) {
         street = entry.street
-        if (!city) city = entry.city
+        if (!city) {
+          city = entry.city
+          extractedFields.push(`עיר: ${city}`)
+        }
         neighborhood = entry.neighborhood
         break
       }
     }
   }
 
-  // Step 4: Top line address pattern (e.g. "ארלוזורוב 20", "עפרוני 2", "רופין 31")
+  // Step 5: Top line address pattern (e.g. "ארלוזורוב 20", "עפרוני 2", "רופין 31")
   if (!street) {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
     for (const line of lines.slice(0, 3)) {
       const lineMatch = line.match(/^([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})(?:\s*[,.]|$)/)
       if (lineMatch) {
-        const cand = lineMatch[1].trim()
-        if (!cand.includes('קומה') && !cand.includes('חדר') && !cand.includes('שיווק') && !cand.includes('למכירה') && !cand.includes('להשכרה')) {
+        let cand = lineMatch[1].trim()
+        // Strip city prefix if included on line
+        cand = cand.replace(/^(?:כ["״'׳]?ס|ת["״'׳]?א|ר["״'׳]?ג|פ["״'׳]?ת|ראשל["״'׳]?צ|הוד["״'׳]?ש|רה["״'׳]?ש|כפר[\s-]סבא|תל[\s-]אביב|רמת[\s-]גן)[\s,.:;-]+/i, '').trim()
+        if (cand && !cand.includes('קומה') && !cand.includes('חדר') && !cand.includes('שיווק') && !cand.includes('למכירה') && !cand.includes('להשכרה') && !cand.includes('דופלקס') && !cand.includes('פנטהאוז')) {
           street = cand
           house_number = lineMatch[2]
           break
@@ -322,7 +352,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     }
   }
 
-  // Step 5: Explicit "ברחוב X" or "רחוב X 20"
+  // Step 6: Explicit "ברחוב X" or "רחוב X 20"
   if (!street) {
     const streetPrefixMatch = text.match(/(?:ברחוב|רחוב|ב?שד(?:רות)?)\s+([א-ת\s'״"-]{2,20}?)(?:\s+(\d{1,4}))?(?:[,.\n]|$)/i)
     if (streetPrefixMatch && streetPrefixMatch[1].trim().length > 1) {
@@ -333,7 +363,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     }
   }
 
-  // Step 6: Extract house number if street was found but house number not yet
+  // Step 7: Extract house number if street was found but house number not yet
   if (street && !house_number) {
     const numRegex = new RegExp(`${street}\\s+(\\d{1,4})`, 'i')
     const matchNum = text.match(numRegex)
@@ -350,6 +380,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
     if (regMatch) {
       city = regMatch.city
       neighborhood = regMatch.neighborhood
+      extractedFields.push(`עיר: ${city}`)
     }
   }
 
