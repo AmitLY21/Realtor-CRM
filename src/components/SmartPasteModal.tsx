@@ -4,13 +4,21 @@ import { checkPropertyDuplicate, db } from '../lib/db'
 import { Property } from '../types'
 import { sendPushNotification } from '../lib/notifications'
 import { 
-  X, 
   Sparkles, 
   CheckCircle2, 
   AlertTriangle,
   Clipboard,
   Info
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface SmartPasteModalProps {
   isOpen: boolean
@@ -221,26 +229,20 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCloseModal() }}>
+      <DialogContent className="max-w-2xl sm:max-w-3xl p-0 overflow-hidden" onClose={handleCloseModal}>
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between">
+        <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-              <Sparkles className="w-4 h-4" />
+            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">קליטה מהירה מוואטסאפ / יד2</h3>
-              <p className="text-xs text-slate-500">הדבק הודעה טקסטואלית לחילוץ אוטומטי ובקרה ידנית</p>
+              <DialogTitle>קליטה מהירה מוואטסאפ / יד2</DialogTitle>
+              <DialogDescription>הדבק הודעה טקסטואלית לחילוץ אוטומטי ובקרה ידנית</DialogDescription>
             </div>
           </div>
-          <button
-            onClick={handleCloseModal}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Content Body */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
@@ -597,24 +599,26 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3.5 sm:p-4 border-t border-slate-200 flex items-center justify-between gap-3 bg-slate-50">
-          <button
+        <DialogFooter className="flex items-center justify-between sm:justify-between">
+          <Button
+            type="button"
+            variant="ghost"
             onClick={handleCloseModal}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
           >
             ביטול
-          </button>
+          </Button>
 
-          <button
+          <Button
+            type="button"
             onClick={handleSave}
             disabled={!draft || isSubmitting}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-xs transition-colors"
+            className="gap-1.5"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
+            <CheckCircle2 className="size-3.5" />
             <span>אישור והוספה למאגר</span>
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

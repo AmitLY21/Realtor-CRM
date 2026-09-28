@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Property, Lead } from '../types'
 import { formatILS, formatPhone } from '../lib/utils'
 import { Search, Building2, Users, ArrowLeft, X } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -22,18 +28,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 }) => {
   const [query, setQuery] = useState('')
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
-
-  if (!isOpen) return null
-
   const q = query.trim().toLowerCase()
 
   const matchedProperties = q ? properties.filter(p => 
@@ -53,39 +47,46 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   ) : []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-xl p-0 overflow-hidden top-[15%] translate-y-0" showCloseButton={false} onClose={onClose}>
+        <DialogTitle className="sr-only">חיפוש מהיר במאגר</DialogTitle>
+
         {/* Search Bar */}
-        <div className="p-3.5 border-b border-slate-200 flex items-center gap-2.5">
-          <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+        <div className="p-3.5 border-b border-border flex items-center gap-2.5 bg-card">
+          <Search className="size-4 text-muted-foreground shrink-0" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="חפש לפי כתובת, שם לקוח, טלפון או עיר..."
-            className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-xs focus:outline-none"
+            className="w-full bg-transparent text-foreground placeholder-muted-foreground text-xs focus:outline-none"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-700">
-              <X className="w-4 h-4" />
-            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setQuery('')}
+              className="size-7 text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-4" />
+            </Button>
           )}
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500 rounded border border-slate-200">ESC</kbd>
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground rounded border border-border">ESC</kbd>
         </div>
 
         {/* Results Body */}
-        <div className="p-2 max-h-96 overflow-y-auto space-y-3">
+        <div className="p-2 max-h-96 overflow-y-auto flex flex-col gap-3">
           {!q ? (
-            <div className="p-6 text-center text-xs text-slate-400">
+            <div className="p-6 text-center text-xs text-muted-foreground">
               הקלד מילת חיפוש למציאה מהירה של נכסים, לקוחות ומספרי טלפון...
             </div>
           ) : (
             <>
               {/* Matched Properties */}
               {matchedProperties.length > 0 && (
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2">
                     נכסים ({matchedProperties.length})
                   </span>
                   {matchedProperties.map(p => (
@@ -95,18 +96,18 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         onSelectProperty(p)
                         onClose()
                       }}
-                      className="p-2 rounded-lg hover:bg-slate-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                      className="p-2 rounded-lg hover:bg-muted cursor-pointer flex items-center justify-between text-xs transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-md bg-slate-100 text-slate-700">
-                          <Building2 className="w-3.5 h-3.5" />
+                        <div className="p-1.5 rounded-md bg-muted text-foreground">
+                          <Building2 className="size-3.5" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900">{p.street} {p.house_number || ''}, {p.neighborhood || p.city}</p>
-                          <p className="text-[11px] text-slate-500">{p.rooms} חדרים • {formatILS(p.price)}</p>
+                          <p className="font-bold text-foreground">{p.street} {p.house_number || ''}, {p.neighborhood || p.city}</p>
+                          <p className="text-[11px] text-muted-foreground">{p.rooms} חדרים • {formatILS(p.price)}</p>
                         </div>
                       </div>
-                      <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                      <ArrowLeft className="size-3.5 text-muted-foreground" />
                     </div>
                   ))}
                 </div>
@@ -114,8 +115,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
               {/* Matched Leads */}
               {matchedLeads.length > 0 && (
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2">
                     לקוחות ({matchedLeads.length})
                   </span>
                   {matchedLeads.map(l => (
@@ -125,32 +126,32 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         onSelectLead(l)
                         onClose()
                       }}
-                      className="p-2 rounded-lg hover:bg-slate-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                      className="p-2 rounded-lg hover:bg-muted cursor-pointer flex items-center justify-between text-xs transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-md bg-slate-100 text-slate-700">
-                          <Users className="w-3.5 h-3.5" />
+                        <div className="p-1.5 rounded-md bg-muted text-foreground">
+                          <Users className="size-3.5" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900">{l.full_name}</p>
-                          <p className="text-[11px] text-slate-500 font-mono">{formatPhone(l.phone)} • תקציב: {formatILS(l.max_budget)}</p>
+                          <p className="font-bold text-foreground">{l.full_name}</p>
+                          <p className="text-[11px] text-muted-foreground font-mono">{formatPhone(l.phone)} • תקציב: {formatILS(l.max_budget)}</p>
                         </div>
                       </div>
-                      <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                      <ArrowLeft className="size-3.5 text-muted-foreground" />
                     </div>
                   ))}
                 </div>
               )}
 
               {matchedProperties.length === 0 && matchedLeads.length === 0 && (
-                <div className="p-6 text-center text-xs text-slate-400">
+                <div className="p-6 text-center text-xs text-muted-foreground">
                   לא נמצאו תוצאות עבור "{query}"
                 </div>
               )}
             </>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
