@@ -61,24 +61,43 @@ function dispatchListingsToApp(listings: WhatsAppMessagePayload[]) {
 }
 
 /**
- * Forward ACK to background worker.
+ * Forward ACK to background worker (debounced to consolidate rapid CustomEvent + postMessage).
  */
+let ackTimer: ReturnType<typeof setTimeout> | null = null
+const pendingAckIds = new Set<string>()
+
 function forwardAck(ids?: string[]) {
-  console.log(`[Realtor CRM Companion Bridge] 📤 Forwarding ACK for ${ids?.length ? ids.join(', ') : 'all'} listings`)
-  try {
-    chrome.runtime.sendMessage({
-      type: 'ACK_LISTINGS',
-      ids: ids && ids.length > 0 ? ids : undefined,
-    })
-  } catch (err) {
-    console.warn('[Realtor CRM Companion] Failed to forward ACK to background worker:', err)
+  if (ids && ids.length > 0) {
+    ids.forEach((id) => pendingAckIds.add(id))
   }
+  if (ackTimer) clearTimeout(ackTimer)
+  ackTimer = setTimeout(() => {
+    const toSend = Array.from(pendingAckIds)
+    pendingAckIds.clear()
+    console.log(
+      `[Realtor CRM Companion Bridge] 📤 Forwarding ACK for ${toSend.length ? toSend.join(', ') : 'all'} listings`
+    )
+    try {
+      chrome.runtime.sendMessage({
+        type: 'ACK_LISTINGS',
+        ids: toSend.length > 0 ? toSend : undefined,
+      })
+    } catch (err) {
+      console.warn('[Realtor CRM Companion] Failed to forward ACK to background worker:', err)
+    }
+  }, 40)
 }
 
 /**
- * Request flush from background worker.
+ * Request flush from background worker (throttled to avoid redundant calls).
  */
+let flushTimer: ReturnType<typeof setTimeout> | null = null
 function requestFlush() {
+  if (flushTimer) return
+  flushTimer = setTimeout(() => {
+    flushTimer = null
+  }, 300)
+
   console.log('[Realtor CRM Companion Bridge] 🔄 Flush requested from application')
   try {
     chrome.runtime.sendMessage({ type: 'FLUSH_REQUEST' }, (response) => {

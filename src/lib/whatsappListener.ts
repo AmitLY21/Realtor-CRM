@@ -212,11 +212,30 @@ export async function processSingleIncomingListing(
   return newListing.id
 }
 
+const recentlyProcessed = new Map<string, number>()
+
+function isRecentlyProcessed(item: RawWhatsAppListingPayload): boolean {
+  const now = Date.now()
+  // Clean entries older than 8 seconds
+  for (const [key, ts] of recentlyProcessed.entries()) {
+    if (now - ts > 8000) recentlyProcessed.delete(key)
+  }
+
+  const raw = (item.rawText || item.text || item.message || '').replace(/\s+/g, ' ').trim()
+  const key = item.id ? `id_${item.id}` : `text_${raw}_${item.groupTitle || ''}`
+  if (!key || key === 'text__') return false
+
+  if (recentlyProcessed.has(key)) {
+    return true
+  }
+  recentlyProcessed.set(key, now)
+  return false
+}
+
 /**
  * Process a batch or single incoming payload object/array.
  */
 export async function processIncomingWhatsAppPayload(payload: unknown): Promise<string[]> {
-  console.log('[Realtor CRM Ingestion] 📥 Received payload from extension:', payload)
   if (!payload) return []
 
   let items: RawWhatsAppListingPayload[] = []
@@ -236,6 +255,9 @@ export async function processIncomingWhatsAppPayload(payload: unknown): Promise<
 
   const processedIds: string[] = []
   for (const item of items) {
+    if (isRecentlyProcessed(item)) {
+      continue
+    }
     try {
       const processedId = await processSingleIncomingListing(item)
       if (processedId) {

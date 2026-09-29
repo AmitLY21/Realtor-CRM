@@ -11,7 +11,8 @@
     "https://web.whatsapp.com/*",
     "http://localhost:*/*",
     "http://127.0.0.1:*/*",
-    "https://*.github.io/*"
+    "https://*.github.io/*",
+    "http://*.github.io/*"
   ],
   "background": {
     "service_worker": "dist/background.js"
@@ -30,7 +31,8 @@
       "matches": [
         "http://localhost:*/*",
         "http://127.0.0.1:*/*",
-        "https://*.github.io/*"
+        "https://*.github.io/*",
+        "http://*.github.io/*"
       ],
       "run_at": "document_idle",
       "js": [

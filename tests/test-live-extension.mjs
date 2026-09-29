@@ -109,13 +109,21 @@ async function run() {
     const badgeVisible = await badge.isVisible().catch(() => false)
     console.log('Header badge showing "1"?', badgeVisible)
 
+    // Dismiss any onboarding/welcome dialog if open
+    await page.keyboard.press('Escape')
+    const dismissBtn = page.locator('button:has-text("הבנתי"), button:has-text("סגור"), button:has-text("דלג")').first()
+    if (await dismissBtn.isVisible().catch(() => false)) {
+      await dismissBtn.click()
+    }
+    await page.waitForTimeout(500)
+
     // Open drawer by clicking the button
     console.log('Clicking WhatsApp button to open drawer...')
-    await waButton.click()
+    await waButton.click({ force: true })
     await page.waitForTimeout(1000)
 
     // Check if drawer is open
-    const drawerTitle = page.locator('text=מודעות נקלטו מוואטסאפ')
+    const drawerTitle = page.locator('text=מודעות וואטסאפ נכנסות')
     const isDrawerOpen = await drawerTitle.isVisible().catch(() => false)
     console.log('IncomingListingsDrawer open?', isDrawerOpen)
 

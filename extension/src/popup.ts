@@ -70,7 +70,8 @@ async function checkTabs(): Promise<{ waOpen: boolean; crmOpen: boolean; crmTabU
         url: [
           'http://localhost:*/*',
           'http://127.0.0.1:*/*',
-          'https://*.github.io/*'
+          'https://*.github.io/*',
+          'http://*.github.io/*'
         ]
       }),
     ])
@@ -253,7 +254,7 @@ btnOpenWa.addEventListener('click', () => {
 btnOpenCrm.addEventListener('click', async () => {
   try {
     const tabs = await chrome.tabs.query({
-      url: ['http://localhost:*/*', 'http://127.0.0.1:*/*', 'https://*.github.io/*'],
+      url: ['http://localhost:*/*', 'http://127.0.0.1:*/*', 'https://*.github.io/*', 'http://*.github.io/*'],
     })
     if (tabs.length > 0 && tabs[0].id) {
       await chrome.tabs.update(tabs[0].id, { active: true })
