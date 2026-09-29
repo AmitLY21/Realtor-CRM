@@ -62,8 +62,12 @@ export function App() {
     async function init() {
       await seedInitialDataIfEmpty()
       await ensureStoragePersistence()
-      await initSupabaseSync()
       setIsInitialized(true)
+
+      // Initialize Supabase in background without blocking offline PWA startup
+      initSupabaseSync().catch((err) => {
+        console.warn('[SupabaseSync] Background init failed:', err)
+      })
 
       // First-time onboarding tour auto-launch
       const hasSeenTour = typeof window !== 'undefined' && localStorage.getItem('realtor_crm_onboarded') === 'true'

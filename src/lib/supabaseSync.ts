@@ -1,4 +1,4 @@
-import { supabase } from './supabase/client'
+import { supabase, isSupabaseConfigured } from './supabase/client'
 import { db } from './db'
 import type { 
   Property, 
@@ -106,6 +106,15 @@ function mapIncomingListingFromDb(row: any): WhatsAppIncomingListing {
 
 // Check which tables are created in Supabase
 export async function checkSupabaseTables(): Promise<{ ok: boolean; missing: string[] }> {
+  if (!isSupabaseConfigured) {
+    updateState({
+      status: 'idle',
+      missingTables: [],
+      message: 'סנכרון ענן אינו פעיל (משתני סביבה לא הוגדרו)'
+    })
+    return { ok: false, missing: [] }
+  }
+
   updateState({ status: 'checking', message: 'בודק זמינות טבלאות ב-Supabase...' })
   const missing: string[] = []
 
@@ -139,7 +148,7 @@ export async function checkSupabaseTables(): Promise<{ ok: boolean; missing: str
 
 // Push a single record to Supabase
 async function pushRecord(table: TableName, record: any) {
-  if (isSyncingFromRemote || syncState.status === 'missing_tables') return
+  if (!isSupabaseConfigured || isSyncingFromRemote || syncState.status === 'missing_tables') return
 
   try {
     let payload: any = record
@@ -163,7 +172,7 @@ async function pushRecord(table: TableName, record: any) {
 
 // Delete a single record from Supabase
 async function deleteRecord(table: TableName, key: string) {
-  if (isSyncingFromRemote || syncState.status === 'missing_tables') return
+  if (!isSupabaseConfigured || isSyncingFromRemote || syncState.status === 'missing_tables') return
 
   try {
     const keyField = table === 'settings' ? 'key' : 'id'
@@ -178,6 +187,13 @@ async function deleteRecord(table: TableName, key: string) {
 
 // Push all local Dexie data to Supabase
 export async function pushAllToSupabase(): Promise<{ success: boolean; message: string }> {
+  if (!isSupabaseConfigured) {
+    return {
+      success: false,
+      message: 'סנכרון ענן אינו מוגדר במערכת (משתני סביבה לא הוגדרו)'
+    }
+  }
+
   updateState({ status: 'syncing', message: 'מעלה נתונים מקומיים לענן...' })
 
   try {
@@ -241,6 +257,13 @@ export async function pushAllToSupabase(): Promise<{ success: boolean; message: 
 
 // Pull all data from Supabase into local Dexie
 export async function pullAllFromSupabase(): Promise<{ success: boolean; message: string }> {
+  if (!isSupabaseConfigured) {
+    return {
+      success: false,
+      message: 'סנכרון ענן אינו מוגדר במערכת (משתני סביבה לא הוגדרו)'
+    }
+  }
+
   updateState({ status: 'syncing', message: 'מוריד נתונים מהענן למאגר המקומי...' })
 
   try {
@@ -395,6 +418,14 @@ export function setupSupabaseRealtime() {
 
 // Master init function to start sync engine
 export async function initSupabaseSync() {
+  if (!isSupabaseConfigured) {
+    updateState({
+      status: 'idle',
+      missingTables: [],
+      message: 'סנכרון ענן אינו פעיל (משתני סביבה לא הוגדרו)'
+    })
+    return
+  }
   setupDexieSupabaseHooks()
   const { ok } = await checkSupabaseTables()
   if (ok) {
