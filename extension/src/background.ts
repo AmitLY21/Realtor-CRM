@@ -20,6 +20,7 @@ const CRM_URL_PATTERNS = [
   'https://*.github.io/*'
 ]
 const WHATSAPP_URL_PATTERN = 'https://web.whatsapp.com/*'
+const MAX_QUEUE_SIZE = 200
 
 /**
  * Update the extension toolbar badge with the current pending listings count.
