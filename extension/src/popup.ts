@@ -66,7 +66,13 @@ async function checkTabs(): Promise<{ waOpen: boolean; crmOpen: boolean; crmTabU
   try {
     const [waTabs, crmTabs] = await Promise.all([
       chrome.tabs.query({ url: 'https://web.whatsapp.com/*' }),
-      chrome.tabs.query({ url: ['http://localhost:*/*', 'http://127.0.0.1:*/*'] }),
+      chrome.tabs.query({
+        url: [
+          'http://localhost:*/*',
+          'http://127.0.0.1:*/*',
+          'https://*.github.io/*'
+        ]
+      }),
     ])
 
     return {
@@ -244,8 +250,22 @@ btnOpenWa.addEventListener('click', () => {
   focusOrOpen('https://web.whatsapp.com/*', 'https://web.whatsapp.com')
 })
 
-btnOpenCrm.addEventListener('click', () => {
-  focusOrOpen('http://localhost:*/*', 'http://localhost:5173')
+btnOpenCrm.addEventListener('click', async () => {
+  try {
+    const tabs = await chrome.tabs.query({
+      url: ['http://localhost:*/*', 'http://127.0.0.1:*/*', 'https://*.github.io/*'],
+    })
+    if (tabs.length > 0 && tabs[0].id) {
+      await chrome.tabs.update(tabs[0].id, { active: true })
+      if (tabs[0].windowId !== undefined) {
+        await chrome.windows.update(tabs[0].windowId, { focused: true })
+      }
+    } else {
+      await chrome.tabs.create({ url: 'https://amitly21.github.io/Realtor-CRM/' })
+    }
+  } catch {
+    chrome.tabs.create({ url: 'https://amitly21.github.io/Realtor-CRM/' })
+  }
 })
 
 // Listen for storage changes in real-time while popup is open

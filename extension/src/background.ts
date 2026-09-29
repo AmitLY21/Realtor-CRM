@@ -14,8 +14,11 @@
 
 import type { WhatsAppMessagePayload, ExtensionStatus } from './types'
 
-const MAX_QUEUE_SIZE = 200
-const CRM_URL_PATTERNS = ['http://localhost:*/*', 'http://127.0.0.1:*/*']
+const CRM_URL_PATTERNS = [
+  'http://localhost:*/*',
+  'http://127.0.0.1:*/*',
+  'https://*.github.io/*'
+]
 const WHATSAPP_URL_PATTERN = 'https://web.whatsapp.com/*'
 
 /**
