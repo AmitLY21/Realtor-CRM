@@ -1,0 +1,16 @@
+{
+  "name": "realtor-crm-whatsapp-companion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WhatsApp Web companion extension for Realtor CRM",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.308",
+    "typescript": "^5.8.0",
+    "vite": "^6.0.0"
+  }
+}
