@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   db,
@@ -10,6 +10,7 @@ import {
   cleanQueueDuplicates
 } from '../lib/db'
 import { WhatsAppIncomingListing } from '../types'
+import { requestWhatsAppListingsFlush } from '../lib/whatsappListener'
 import {
   Sheet,
   SheetContent,
@@ -35,7 +36,8 @@ import {
   Inbox,
   Download,
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  RefreshCw
 } from 'lucide-react'
 
 interface IncomingListingsDrawerProps {
@@ -128,6 +130,12 @@ export const IncomingListingsDrawer: React.FC<IncomingListingsDrawerProps> = ({
   const handleRestore = async (listing: WhatsAppIncomingListing) => {
     await addIncomingListing({ ...listing, status: 'pending' })
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      requestWhatsAppListingsFlush()
+    }
+  }, [isOpen])
 
   const renderSetupGuide = () => (
     <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs flex flex-col gap-2.5 text-slate-700 animate-in fade-in duration-150">
@@ -224,6 +232,16 @@ export const IncomingListingsDrawer: React.FC<IncomingListingsDrawerProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => requestWhatsAppListingsFlush()}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+                title="סנכרן מודעות שממתינות בתוסף כרום"
+              >
+                <RefreshCw className="size-3.5 text-slate-500" />
+                <span>רענן מהתוסף</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setShowSetupGuide(!showSetupGuide)}

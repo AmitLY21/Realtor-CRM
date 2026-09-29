@@ -16,6 +16,40 @@ export interface RawWhatsAppListingPayload {
   timestamp?: number
 }
 
+// Forward ACK to companion extension via both CustomEvent and postMessage
+function ackListingToBridge(id: string) {
+  if (typeof window === 'undefined') return
+  try {
+    window.dispatchEvent(
+      new CustomEvent('REALTOR_CRM_ACK_LISTING', {
+        detail: { ids: [id] }
+      })
+    )
+  } catch {}
+  try {
+    window.postMessage(
+      {
+        type: 'REALTOR_CRM_ACK_LISTING',
+        ids: [id]
+      },
+      '*'
+    )
+  } catch {}
+}
+
+/**
+ * Request flush of pending listings from the Chrome Companion extension.
+ */
+export function requestWhatsAppListingsFlush() {
+  if (typeof window === 'undefined') return
+  try {
+    window.dispatchEvent(new CustomEvent('REALTOR_CRM_REQUEST_FLUSH'))
+  } catch {}
+  try {
+    window.postMessage({ type: 'REALTOR_CRM_REQUEST_FLUSH' }, '*')
+  } catch {}
+}
+
 /**
  * Ingest and process a single raw WhatsApp listing payload.
  * Applies quality gating, duplicate detection against active CRM properties,
@@ -28,29 +62,40 @@ export async function processSingleIncomingListing(
   const rawText = (item.rawText || item.text || item.message || '').trim()
   if (!rawText) return null
 
+  const listingId = item.id || `wa-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
+  const groupTitle = item.groupTitle?.trim() || 'קבוצת וואטסאפ'
+  const normalizedText = rawText.replace(/\s+/g, ' ').trim()
+
   // 1. Parse text using existing deep Israeli real-estate parser
   const parsedDraft = parseRawListingText(rawText)
 
-  // 2. Quality Filter: Check confidence score >= 25 or at least 2 key signals
+  // 2. Signals Evaluation
   let signals = 0
   if (parsedDraft.price !== undefined && parsedDraft.price > 0) signals++
   if (parsedDraft.rooms !== undefined && parsedDraft.rooms > 0) signals++
   if (parsedDraft.street && parsedDraft.street.trim()) signals++
   if (parsedDraft.city && parsedDraft.city.trim()) signals++
+  if (parsedDraft.property_type && parsedDraft.property_type !== 'apartment') signals++
+  if (parsedDraft.has_mamad || parsedDraft.has_balcony || parsedDraft.has_elevator) signals++
 
-  const isQualified = parsedDraft.confidenceScore >= 25 || signals >= 2
-  if (!isQualified) {
-    // Pure group chatter (e.g. "בוקר טוב", "תודה", emojis), discard
+  // Check if text has any real estate signals or keywords
+  const isRealEstateListing = 
+    parsedDraft.confidenceScore >= 15 || 
+    signals >= 1 || 
+    /(?:דיר[הת]|למכיר[הת]|להשכר[הת]|חדר(?:ים)?|קומה|מ[״"״]ר|פנטהאוז|דופלקס|גג|גן|קרקע|וילה|קוטג׳|טאבו|בלעדיות)/i.test(rawText)
+
+  if (!isRealEstateListing) {
+    console.log('[Realtor CRM Ingestion] ⏭️ Skipping pure group chatter from:', groupTitle, rawText.slice(0, 50))
+    // Acknowledge so extension clears it from queue!
+    ackListingToBridge(listingId)
     return null
   }
-
-  const listingId = item.id || `wa-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
-  const groupTitle = item.groupTitle?.trim() || 'קבוצת וואטסאפ'
-  const normalizedText = rawText.replace(/\s+/g, ' ').trim()
 
   // 3. Queue Deduplication & Multi-Group Repost Consolidation
   const existingById = await db.incoming_listings.get(listingId)
   if (existingById) {
+    console.log('[Realtor CRM Ingestion] ⏭️ Item already exists in queue:', listingId)
+    ackListingToBridge(listingId)
     return null
   }
 
@@ -98,23 +143,12 @@ export async function processSingleIncomingListing(
       existingMatch.receivedAt = Date.now()
       await addIncomingListing(existingMatch)
 
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('REALTOR_CRM_ACK_LISTING', {
-            detail: { ids: [existingMatch.id] }
-          })
-        )
-      }
+      ackListingToBridge(existingMatch.id)
+      ackListingToBridge(listingId)
       return existingMatch.id
     } else if (existingMatch.status === 'imported') {
       // Already imported previously, do not create duplicate card
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('REALTOR_CRM_ACK_LISTING', {
-            detail: { ids: [listingId] }
-          })
-        )
-      }
+      ackListingToBridge(listingId)
       return null
     }
   }
@@ -155,6 +189,7 @@ export async function processSingleIncomingListing(
   }
 
   await addIncomingListing(newListing)
+  console.log('[Realtor CRM Ingestion] ✅ Successfully ingested listing:', newListing.id, groupTitle)
 
   // 6. Push notification alerting the broker
   if (priceDifference !== undefined && priceDifference < 0) {
@@ -172,13 +207,7 @@ export async function processSingleIncomingListing(
   }
 
   // 7. Dispatch ACK event to notify the companion extension
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(
-      new CustomEvent('REALTOR_CRM_ACK_LISTING', {
-        detail: { ids: [newListing.id] }
-      })
-    )
-  }
+  ackListingToBridge(newListing.id)
 
   return newListing.id
 }
@@ -187,6 +216,7 @@ export async function processSingleIncomingListing(
  * Process a batch or single incoming payload object/array.
  */
 export async function processIncomingWhatsAppPayload(payload: unknown): Promise<string[]> {
+  console.log('[Realtor CRM Ingestion] 📥 Received payload from extension:', payload)
   if (!payload) return []
 
   let items: RawWhatsAppListingPayload[] = []
@@ -212,7 +242,7 @@ export async function processIncomingWhatsAppPayload(payload: unknown): Promise<
         processedIds.push(processedId)
       }
     } catch (err) {
-      console.error('Error processing incoming WhatsApp listing:', err)
+      console.error('[Realtor CRM Ingestion] Error processing incoming WhatsApp listing:', err)
     }
   }
 
@@ -253,7 +283,20 @@ export function useWhatsAppListener() {
     window.addEventListener('REALTOR_CRM_WHATSAPP_LISTINGS', onListingsReceived)
     window.addEventListener('message', onMessageReceived)
 
+    // Initial flush triggers to fetch any existing queue
+    requestWhatsAppListingsFlush()
+    const t1 = setTimeout(requestWhatsAppListingsFlush, 600)
+    const t2 = setTimeout(requestWhatsAppListingsFlush, 1800)
+    const t3 = setTimeout(requestWhatsAppListingsFlush, 3500)
+
+    // Heartbeat check every 4 seconds to pull any newly captured listings
+    const interval = setInterval(requestWhatsAppListingsFlush, 4000)
+
     return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+      clearInterval(interval)
       window.removeEventListener('REALTOR_CRM_WHATSAPP_LISTINGS', onListingsReceived)
       window.removeEventListener('message', onMessageReceived)
     }
