@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { Property, Lead, Reminder, AgentProfile, PriceHistoryEntry, InAppNotification } from '../types'
+import { Property, Lead, Reminder, AgentProfile, PriceHistoryEntry, InAppNotification, WhatsAppIncomingListing, ParsedPropertyDraft } from '../types'
 
 export class RealtorDatabase extends Dexie {
   properties!: Table<Property, string>
@@ -7,6 +7,7 @@ export class RealtorDatabase extends Dexie {
   reminders!: Table<Reminder, string>
   settings!: Table<{ key: string; value: any }, string>
   notifications!: Table<InAppNotification, string>
+  incoming_listings!: Table<WhatsAppIncomingListing, string>
 
   constructor() {
     super('RealtorCRM_DB')
@@ -18,6 +19,9 @@ export class RealtorDatabase extends Dexie {
     })
     this.version(2).stores({
       notifications: 'id, type, timestamp, read'
+    })
+    this.version(3).stores({
+      incoming_listings: 'id, status, receivedAt, groupTitle, duplicateOfPropertyId'
     })
   }
 }
@@ -395,21 +399,91 @@ export async function checkLeadDuplicate(phone: string): Promise<Lead | undefine
 }
 
 export async function checkPropertyDuplicate(
+  draft: ParsedPropertyDraft,
+  allProperties?: Property[]
+): Promise<Property | undefined>
+export async function checkPropertyDuplicate(
   city: string,
   street: string,
   houseNumber?: string,
   rooms?: number,
   floor?: number
+): Promise<Property | undefined>
+export async function checkPropertyDuplicate(
+  draftOrCity: ParsedPropertyDraft | string,
+  propertiesOrStreet?: Property[] | string,
+  houseNumber?: string,
+  rooms?: number,
+  floor?: number
 ): Promise<Property | undefined> {
-  const properties = await db.properties.toArray()
-  return properties.find(p => {
-    const isSameCity = p.city.includes(city) || city.includes(p.city)
-    const isSameStreet = p.street.includes(street) || street.includes(p.street)
-    const isSameHouse = !houseNumber || !p.house_number || p.house_number === houseNumber
-    const isSameRooms = !rooms || p.rooms === rooms
-    const isSameFloor = floor === undefined || p.floor === floor
-    return isSameCity && isSameStreet && isSameHouse && isSameRooms && isSameFloor
-  })
+  if (typeof draftOrCity === 'object') {
+    const draft = draftOrCity
+    const properties = (propertiesOrStreet as Property[]) || await db.properties.toArray()
+    return properties.find(p => {
+      if (p.status !== 'active') return false
+      const isSameCity = Boolean(draft.city && (p.city.includes(draft.city) || draft.city.includes(p.city)))
+      const isSameStreet = Boolean(draft.street && (p.street.includes(draft.street) || draft.street.includes(p.street)))
+      const isSameHouse = !draft.house_number || !p.house_number || p.house_number === draft.house_number
+      const isSameRooms = !draft.rooms || p.rooms === draft.rooms
+      const isSameFloor = draft.floor === undefined || p.floor === draft.floor
+      return isSameCity && isSameStreet && isSameHouse && isSameRooms && isSameFloor
+    })
+  } else {
+    const city = draftOrCity
+    const street = propertiesOrStreet as string
+    const properties = await db.properties.toArray()
+    return properties.find(p => {
+      const isSameCity = p.city.includes(city) || city.includes(p.city)
+      const isSameStreet = p.street.includes(street) || street.includes(p.street)
+      const isSameHouse = !houseNumber || !p.house_number || p.house_number === houseNumber
+      const isSameRooms = !rooms || p.rooms === rooms
+      const isSameFloor = floor === undefined || p.floor === floor
+      return isSameCity && isSameStreet && isSameHouse && isSameRooms && isSameFloor
+    })
+  }
+}
+
+// Incoming WhatsApp Listings Helper Functions
+export async function getPendingIncomingListings(): Promise<WhatsAppIncomingListing[]> {
+  return await db.incoming_listings.where('status').equals('pending').sortBy('receivedAt')
+}
+
+export async function addIncomingListing(listing: WhatsAppIncomingListing): Promise<void> {
+  await db.incoming_listings.put(listing)
+}
+
+export async function dismissIncomingListing(id: string): Promise<void> {
+  await db.incoming_listings.update(id, { status: 'dismissed' })
+}
+
+export async function markIncomingListingImported(id: string): Promise<void> {
+  await db.incoming_listings.update(id, { status: 'imported' })
+}
+
+export async function deleteIncomingListing(id: string): Promise<void> {
+  await db.incoming_listings.delete(id)
+}
+
+export async function cleanQueueDuplicates(): Promise<number> {
+  const all = await db.incoming_listings.where('status').equals('pending').toArray()
+  const seenSignatures = new Set<string>()
+  let removedCount = 0
+
+  for (const item of all) {
+    const draft = item.parsedDraft
+    const signature = draft.city && draft.street
+      ? `${draft.city.trim()}|${draft.street.trim()}|${draft.rooms || 0}|${draft.house_number || 0}`
+      : item.rawText.replace(/\s+/g, ' ').trim()
+
+    if (seenSignatures.has(signature)) {
+      await db.incoming_listings.delete(item.id)
+      removedCount++
+    } else {
+      seenSignatures.add(signature)
+    }
+  }
+
+  return removedCount
 }
 
 // Price Drop Updater
@@ -440,6 +514,7 @@ export async function exportFullDatabase(): Promise<string> {
   const reminders = await db.reminders.toArray()
   const settings = await db.settings.toArray()
   const notifications = await db.notifications.toArray()
+  const incoming_listings = await db.incoming_listings.toArray()
 
   const data = {
     exported_at: new Date().toISOString(),
@@ -448,7 +523,8 @@ export async function exportFullDatabase(): Promise<string> {
     leads,
     reminders,
     settings,
-    notifications
+    notifications,
+    incoming_listings
   }
   return JSON.stringify(data, null, 2)
 }
@@ -459,6 +535,7 @@ export async function clearAllDataToCleanSlate(): Promise<void> {
   await db.leads.clear()
   await db.reminders.clear()
   await db.notifications.clear()
+  await db.incoming_listings.clear()
   if (typeof window !== 'undefined') {
     localStorage.setItem('realtor_crm_clean_slate', 'true')
   }

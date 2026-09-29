@@ -159,8 +159,52 @@ export interface MatchMatrixResult {
   leadMatchesMap: Record<string, number>
 }
 
+export interface ParsedPropertyDraft {
+  transaction_type: TransactionType
+  property_type: PropertyType
+  is_exclusive: boolean
+  city?: string
+  neighborhood?: string
+  street?: string
+  house_number?: string
+  rooms?: number
+  floor?: number
+  total_floors?: number
+  sqm?: number
+  price?: number
+  has_mamad: boolean
+  has_elevator: boolean
+  has_balcony: boolean
+  has_storage: boolean
+  parking_type: ParkingType
+  parking_legal: ParkingLegal
+  contact_name?: string
+  contact_phone?: string
+  raw_text: string
+  confidenceScore: number // 0-100%
+  extractedFields: string[]
+  missingFields: string[]
+}
+
+export interface WhatsAppIncomingListing {
+  id: string
+  rawText: string
+  senderPhone?: string
+  senderName?: string
+  groupTitle: string
+  receivedAt: number
+  status: 'pending' | 'imported' | 'dismissed'
+  parsedDraft: ParsedPropertyDraft
+  duplicateOfPropertyId?: string
+  duplicateOfPropertyAddress?: string
+  repostCount?: number
+  repostGroups?: string[]
+  existingPropertyPrice?: number
+  priceDifference?: number
+}
+
 export type ActiveModal =
-  | { type: 'smart_paste'; initialText?: string }
+  | { type: 'smart_paste'; initialText?: string; initialDraft?: ParsedPropertyDraft; incomingListingId?: string }
   | { type: 'new_lead' }
   | { type: 'search' }
   | { type: 'notifications' }
@@ -169,4 +213,5 @@ export type ActiveModal =
   | { type: 'public_preview'; property: Property; isPrintMode: boolean }
   | { type: 'onboarding_tour' }
   | null
+
 

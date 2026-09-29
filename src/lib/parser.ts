@@ -1,32 +1,8 @@
-import { ParkingType, ParkingLegal, PropertyType, TransactionType } from '../types'
+import { ParkingType, ParkingLegal, PropertyType, TransactionType, ParsedPropertyDraft } from '../types'
 import { ISRAELI_STREET_REGISTRY, lookupNeighborhoodByStreet, detectIsraeliCity } from './geoRegistry'
 
-export interface ParsedPropertyDraft {
-  transaction_type: TransactionType
-  property_type: PropertyType
-  is_exclusive: boolean
-  city?: string
-  neighborhood?: string
-  street?: string
-  house_number?: string
-  rooms?: number
-  floor?: number
-  total_floors?: number
-  sqm?: number
-  price?: number
-  has_mamad: boolean
-  has_elevator: boolean
-  has_balcony: boolean
-  has_storage: boolean
-  parking_type: ParkingType
-  parking_legal: ParkingLegal
-  contact_name?: string
-  contact_phone?: string
-  raw_text: string
-  confidenceScore: number // 0-100%
-  extractedFields: string[]
-  missingFields: string[]
-}
+export type { ParsedPropertyDraft }
+
 
 export function parseRawListingText(rawText: string): ParsedPropertyDraft {
   // 0. Pre-clean WhatsApp headers, timestamps, and invisible characters
@@ -338,7 +314,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
   if (!street) {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
     for (const line of lines.slice(0, 3)) {
-      const lineMatch = line.match(/^([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})(?:\s*[,.]|$)/)
+      const lineMatch = line.match(/^([א-ת\s'״"-]{2,20}?)\s+(\d{1,4})(?:\s*[,.!]|$)[\s!.]*/)
       if (lineMatch) {
         let cand = lineMatch[1].trim()
         // Strip city prefix if included on line
@@ -354,7 +330,7 @@ export function parseRawListingText(rawText: string): ParsedPropertyDraft {
 
   // Step 6: Explicit "ברחוב X" or "רחוב X 20"
   if (!street) {
-    const streetPrefixMatch = text.match(/(?:ברחוב|רחוב|ב?שד(?:רות)?)\s+([א-ת\s'״"-]{2,20}?)(?:\s+(\d{1,4}))?(?:[,.\n]|$)/i)
+    const streetPrefixMatch = text.match(/(?:ברחוב|רחוב|ב?שד(?:רות)?)\s+([א-ת\s'״"-]{2,20}?)(?:\s+(\d{1,4}))?(?:[,.!\n]|$)/i)
     if (streetPrefixMatch && streetPrefixMatch[1].trim().length > 1) {
       street = streetPrefixMatch[1].trim()
       if (streetPrefixMatch[2]) {
