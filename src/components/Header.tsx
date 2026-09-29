@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Bell, Search, Plus, Wifi, WifiOff, Building2, ClipboardList, UserPlus } from 'lucide-react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../lib/db'
+import { Bell, Search, Plus, Wifi, WifiOff, Building2, ClipboardList, UserPlus, MessageCircle } from 'lucide-react'
 
 interface HeaderProps {
   onOpenSearch: () => void
   onOpenSmartPaste: () => void
   onOpenNewLead: () => void
   onOpenNotifications: () => void
+  onOpenWhatsAppDrawer: () => void
   unreadCount: number
 }
 
@@ -14,10 +17,19 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSmartPaste,
   onOpenNewLead,
   onOpenNotifications,
+  onOpenWhatsAppDrawer,
   unreadCount
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [showAddMenu, setShowAddMenu] = useState(false)
+
+  // Live count of pending WhatsApp listings
+  const pendingWhatsAppCount = useLiveQuery(
+    () => db.incoming_listings.where('status').equals('pending').count(),
+    [],
+    0
+  )
+
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
@@ -71,15 +83,33 @@ export const Header: React.FC<HeaderProps> = ({
             <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] bg-white text-slate-500 rounded border border-slate-200">⌘K</kbd>
           </button>
 
+          {/* WhatsApp Ingestion Inbox Button */}
+          <button
+            onClick={onOpenWhatsAppDrawer}
+            className={`relative p-2 rounded-lg border transition-colors cursor-pointer ${
+              pendingWhatsAppCount > 0
+                ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700'
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+            }`}
+            title={`קליטת וואטסאפ (${pendingWhatsAppCount} ממתינים לסקירה)`}
+          >
+            <MessageCircle className="size-4 text-emerald-600" />
+            {pendingWhatsAppCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-emerald-600 text-white text-[9px] font-bold animate-pulse">
+                {pendingWhatsAppCount > 9 ? '9+' : pendingWhatsAppCount}
+              </span>
+            )}
+          </button>
+
           {/* Notifications Bell */}
           <button
             onClick={onOpenNotifications}
             className="relative p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 transition-colors"
             title="מרכז התראות"
           >
-            <Bell className="size-" />
+            <Bell className="size-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center min-size- px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold">
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}

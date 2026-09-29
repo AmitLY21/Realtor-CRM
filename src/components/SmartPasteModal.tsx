@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { parseRawListingText, ParsedPropertyDraft } from '../lib/parser'
-import { checkPropertyDuplicate, db } from '../lib/db'
+import { checkPropertyDuplicate, markIncomingListingImported, db } from '../lib/db'
 import { Property } from '../types'
 import { sendPushNotification } from '../lib/notifications'
 import { 
@@ -23,36 +23,43 @@ import { Button } from '@/components/ui/button'
 interface SmartPasteModalProps {
   isOpen: boolean
   initialText?: string
+  initialDraft?: ParsedPropertyDraft | null
+  incomingListingId?: string
   onClose: () => void
   onPropertyAdded: (newProp: Property) => void
+  onListingImported?: (listingId: string) => void
 }
 
 export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
   isOpen,
   initialText,
+  initialDraft,
+  incomingListingId,
   onClose,
-  onPropertyAdded
+  onPropertyAdded,
+  onListingImported
 }) => {
-  const initialDraft = initialText ? parseRawListingText(initialText) : null
+  const effectiveInitialDraft = initialDraft || (initialText ? parseRawListingText(initialText) : null)
 
-  const [rawText, setRawText] = useState(initialText || '')
-  const [draft, setDraft] = useState<ParsedPropertyDraft | null>(initialDraft)
+  const [rawText, setRawText] = useState(initialText || initialDraft?.raw_text || '')
+  const [draft, setDraft] = useState<ParsedPropertyDraft | null>(effectiveInitialDraft)
+
   const [duplicateWarning, setDuplicateWarning] = useState<Property | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showShareHelp, setShowShareHelp] = useState(false)
 
   // Editable fields state for manual completion/corrections
-  const [formCity, setFormCity] = useState(initialDraft?.city || '')
-  const [formStreet, setFormStreet] = useState(initialDraft?.street || '')
-  const [formHouseNumber, setFormHouseNumber] = useState(initialDraft?.house_number || '')
-  const [formPrice, setFormPrice] = useState<string>(initialDraft?.price !== undefined ? String(initialDraft.price) : '')
-  const [formRooms, setFormRooms] = useState<string>(initialDraft?.rooms !== undefined ? String(initialDraft.rooms) : '')
-  const [formFloor, setFormFloor] = useState<string>(initialDraft?.floor !== undefined ? String(initialDraft.floor) : '')
-  const [formTotalFloors, setFormTotalFloors] = useState<string>(initialDraft?.total_floors !== undefined ? String(initialDraft.total_floors) : '')
-  const [formSqm, setFormSqm] = useState<string>(initialDraft?.sqm !== undefined ? String(initialDraft.sqm) : '')
-  const [formNeighborhood, setFormNeighborhood] = useState(initialDraft?.neighborhood || '')
-  const [formNotes, setFormNotes] = useState(initialDraft?.raw_text || initialText || '')
+  const [formCity, setFormCity] = useState(effectiveInitialDraft?.city || '')
+  const [formStreet, setFormStreet] = useState(effectiveInitialDraft?.street || '')
+  const [formHouseNumber, setFormHouseNumber] = useState(effectiveInitialDraft?.house_number || '')
+  const [formPrice, setFormPrice] = useState<string>(effectiveInitialDraft?.price !== undefined ? String(effectiveInitialDraft.price) : '')
+  const [formRooms, setFormRooms] = useState<string>(effectiveInitialDraft?.rooms !== undefined ? String(effectiveInitialDraft.rooms) : '')
+  const [formFloor, setFormFloor] = useState<string>(effectiveInitialDraft?.floor !== undefined ? String(effectiveInitialDraft.floor) : '')
+  const [formTotalFloors, setFormTotalFloors] = useState<string>(effectiveInitialDraft?.total_floors !== undefined ? String(effectiveInitialDraft.total_floors) : '')
+  const [formSqm, setFormSqm] = useState<string>(effectiveInitialDraft?.sqm !== undefined ? String(effectiveInitialDraft.sqm) : '')
+  const [formNeighborhood, setFormNeighborhood] = useState(effectiveInitialDraft?.neighborhood || '')
+  const [formNotes, setFormNotes] = useState(effectiveInitialDraft?.raw_text || initialText || '')
 
   const handleRawTextChange = (text: string) => {
     setRawText(text)
@@ -87,13 +94,41 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
     }
   }
 
-  useEffect(() => {
-    if (isOpen && initialText && initialText.trim() && rawText !== initialText) {
-      queueMicrotask(() => {
-        handleRawTextChange(initialText)
+  const populateFromDraft = (parsed: ParsedPropertyDraft, text: string) => {
+    setRawText(text)
+    setDraft(parsed)
+    setFormNotes(parsed.raw_text || text)
+    setFormCity(parsed.city || '')
+    setFormStreet(parsed.street || '')
+    setFormHouseNumber(parsed.house_number || '')
+    setFormPrice(parsed.price !== undefined ? String(parsed.price) : '')
+    setFormRooms(parsed.rooms !== undefined ? String(parsed.rooms) : '')
+    setFormFloor(parsed.floor !== undefined ? String(parsed.floor) : '')
+    setFormTotalFloors(parsed.total_floors !== undefined ? String(parsed.total_floors) : '')
+    setFormSqm(parsed.sqm !== undefined ? String(parsed.sqm) : '')
+    setFormNeighborhood(parsed.neighborhood || '')
+    setValidationError(null)
+
+    if (parsed.street && parsed.city) {
+      checkPropertyDuplicate(parsed.city, parsed.street, parsed.house_number, parsed.rooms, parsed.floor).then(dup => {
+        setDuplicateWarning(dup || null)
       })
     }
-  }, [isOpen, initialText, rawText])
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialDraft) {
+        queueMicrotask(() => {
+          populateFromDraft(initialDraft, initialDraft.raw_text || initialText || '')
+        })
+      } else if (initialText && initialText.trim() && rawText !== initialText) {
+        queueMicrotask(() => {
+          handleRawTextChange(initialText)
+        })
+      }
+    }
+  }, [isOpen, initialText, initialDraft, rawText])
 
   const resetForm = () => {
     localStorage.removeItem('realtor_pending_share')
@@ -213,6 +248,16 @@ export const SmartPasteModal: React.FC<SmartPasteModalProps> = ({
 
       await db.properties.add(newProperty)
       await sendPushNotification('נכס חדש נקלט בהצלחה!', `${newProperty.rooms} חדרים ב${newProperty.street}, ${newProperty.city}`, 'match')
+
+      if (incomingListingId) {
+        try {
+          await markIncomingListingImported(incomingListingId)
+          onListingImported?.(incomingListingId)
+        } catch (err) {
+          console.warn('Failed marking incoming listing as imported:', err)
+        }
+      }
+
       resetForm()
       onPropertyAdded(newProperty)
       onClose()

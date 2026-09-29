@@ -13,6 +13,8 @@ import {
 } from './lib/notifications'
 import { ensureStoragePersistence } from './lib/imageCompressor'
 import { Property, Lead, Reminder, AgentProfile, InAppNotification, ActiveModal } from './types'
+import { useWhatsAppListener } from './lib/whatsappListener'
+import { initSupabaseSync } from './lib/supabaseSync'
 
 // Components
 import { Header } from './components/Header'
@@ -30,11 +32,18 @@ import { EditPropertyModal } from './components/EditPropertyModal'
 import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { NotificationCenter } from './components/NotificationCenter'
 import { OnboardingTourModal } from './components/OnboardingTourModal'
+import { IncomingListingsDrawer } from './components/IncomingListingsDrawer'
+
 
 export function App() {
+  // Initialize WhatsApp Web Companion Listener
+  useWhatsAppListener()
+
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
   const [isInitialized, setIsInitialized] = useState(false)
   const [activeModal, setActiveModal] = useState<ActiveModal>(null)
+  const [isWhatsAppDrawerOpen, setIsWhatsAppDrawerOpen] = useState(false)
+
 
   // Live queries from Dexie
   const properties = useLiveQuery(() => db.properties.toArray(), [], [] as Property[])
@@ -53,6 +62,7 @@ export function App() {
     async function init() {
       await seedInitialDataIfEmpty()
       await ensureStoragePersistence()
+      await initSupabaseSync()
       setIsInitialized(true)
 
       // First-time onboarding tour auto-launch
@@ -175,6 +185,7 @@ export function App() {
         onOpenSmartPaste={() => setActiveModal({ type: 'smart_paste' })}
         onOpenNewLead={() => setActiveModal({ type: 'new_lead' })}
         onOpenNotifications={() => setActiveModal({ type: 'notifications' })}
+        onOpenWhatsAppDrawer={() => setIsWhatsAppDrawerOpen(true)}
         unreadCount={unreadCount}
       />
 
@@ -270,9 +281,25 @@ export function App() {
       <SmartPasteModal
         isOpen={activeModal?.type === 'smart_paste'}
         initialText={activeModal?.type === 'smart_paste' ? activeModal.initialText : undefined}
+        initialDraft={activeModal?.type === 'smart_paste' ? activeModal.initialDraft : undefined}
+        incomingListingId={activeModal?.type === 'smart_paste' ? activeModal.incomingListingId : undefined}
         onClose={() => setActiveModal(null)}
         onPropertyAdded={(_newProp) => {
           setActiveTab('properties')
+        }}
+      />
+
+      <IncomingListingsDrawer
+        isOpen={isWhatsAppDrawerOpen}
+        onClose={() => setIsWhatsAppDrawerOpen(false)}
+        onImportListing={(listing) => {
+          setIsWhatsAppDrawerOpen(false)
+          setActiveModal({
+            type: 'smart_paste',
+            initialText: listing.rawText,
+            initialDraft: listing.parsedDraft,
+            incomingListingId: listing.id
+          })
         }}
       />
 
