@@ -15,6 +15,7 @@ import { ensureStoragePersistence } from './lib/imageCompressor'
 import { Property, Lead, Reminder, AgentProfile, InAppNotification, ActiveModal } from './types'
 import { useWhatsAppListener } from './lib/whatsappListener'
 import { initSupabaseSync } from './lib/supabaseSync'
+import { initAuth } from './lib/auth'
 
 // Components
 import { Header } from './components/Header'
@@ -33,6 +34,7 @@ import { GlobalSearchModal } from './components/GlobalSearchModal'
 import { NotificationCenter } from './components/NotificationCenter'
 import { OnboardingTourModal } from './components/OnboardingTourModal'
 import { IncomingListingsDrawer } from './components/IncomingListingsDrawer'
+import { AuthModal } from './components/AuthModal'
 
 
 export function App() {
@@ -60,11 +62,17 @@ export function App() {
   // Initialize DB and Seed Data
   useEffect(() => {
     async function init() {
-      await seedInitialDataIfEmpty()
-      await ensureStoragePersistence()
-      setIsInitialized(true)
+      try {
+        await seedInitialDataIfEmpty()
+        await ensureStoragePersistence()
+      } catch (err) {
+        console.error('[App] Init error:', err)
+      } finally {
+        setIsInitialized(true)
+      }
 
-      // Initialize Supabase in background without blocking offline PWA startup
+      // Initialize Supabase Auth and Sync engine
+      initAuth().catch((err) => console.warn('[Auth] Init failed:', err))
       initSupabaseSync().catch((err) => {
         console.warn('[SupabaseSync] Background init failed:', err)
       })
@@ -175,7 +183,7 @@ export function App() {
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-800">
-        <div className="size- rounded-xl bg-blue-600 animate-pulse mb-3" />
+        <div className="size-8 rounded-xl bg-blue-600 animate-pulse mb-3" />
         <p className="text-sm font-medium text-slate-600">טוען נתוני מאגר מקומי...</p>
       </div>
     )
@@ -190,6 +198,7 @@ export function App() {
         onOpenNewLead={() => setActiveModal({ type: 'new_lead' })}
         onOpenNotifications={() => setActiveModal({ type: 'notifications' })}
         onOpenWhatsAppDrawer={() => setIsWhatsAppDrawerOpen(true)}
+        onOpenAuth={() => setActiveModal({ type: 'auth', initialMode: 'signin' })}
         unreadCount={unreadCount}
       />
 
@@ -370,6 +379,16 @@ export function App() {
           await db.settings.put({ key: 'agent_profile', value: newProfile })
           localStorage.setItem('realtor_crm_onboarded', 'true')
           await sendPushNotification('ברוך הבא ל-Realtor CRM!', `פרופיל המתווך של ${newProfile.name} הוגדר בהצלחה.`, 'match')
+        }}
+      />
+
+      <AuthModal
+        isOpen={activeModal?.type === 'auth'}
+        initialMode={activeModal?.type === 'auth' ? activeModal.initialMode : undefined}
+        onClose={() => setActiveModal(null)}
+        onSuccess={() => {
+          setActiveModal(null)
+          initSupabaseSync()
         }}
       />
     </div>

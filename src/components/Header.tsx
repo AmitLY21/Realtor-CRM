@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../lib/db'
-import { Bell, Search, Plus, Wifi, WifiOff, Building2, ClipboardList, UserPlus, MessageCircle } from 'lucide-react'
+import { 
+  Bell, 
+  Search, 
+  Plus, 
+  Wifi, 
+  WifiOff, 
+  Building2, 
+  ClipboardList, 
+  UserPlus, 
+  MessageCircle, 
+  UserCircle2, 
+  LogIn, 
+  LogOut, 
+  Copy, 
+  Check 
+} from 'lucide-react'
+import { subscribeAuthState, signOut, getAuthState } from '../lib/auth'
+import type { AuthState } from '../types'
 
 interface HeaderProps {
   onOpenSearch: () => void
@@ -9,6 +26,7 @@ interface HeaderProps {
   onOpenNewLead: () => void
   onOpenNotifications: () => void
   onOpenWhatsAppDrawer: () => void
+  onOpenAuth: () => void
   unreadCount: number
 }
 
@@ -18,10 +36,18 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNewLead,
   onOpenNotifications,
   onOpenWhatsAppDrawer,
+  onOpenAuth,
   unreadCount
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [showAddMenu, setShowAddMenu] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [copiedCode, setCopiedCode] = useState(false)
+  const [auth, setAuth] = useState<AuthState>(getAuthState())
+
+  useEffect(() => {
+    return subscribeAuthState(setAuth)
+  }, [])
 
   // Live count of pending WhatsApp listings
   const pendingWhatsAppCount = useLiveQuery(
@@ -155,6 +181,85 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </button>
               </div>
+            )}
+          </div>
+
+          {/* User Auth & Team Status */}
+          <div className="relative">
+            {auth.isAuthenticated ? (
+              <div>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium transition-colors"
+                  title="פרופיל צוות ומשתמש"
+                >
+                  <UserCircle2 className="size-4 text-blue-600" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">
+                    {auth.agency?.name || 'צוות נדל״ן'}
+                  </span>
+                </button>
+
+                {showUserMenu && (
+                  <div 
+                    className="absolute left-0 mt-1.5 w-64 rounded-xl bg-white border border-slate-200 p-2 shadow-xl z-50 text-right animate-in fade-in duration-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                      <p className="font-semibold text-xs text-slate-900 truncate">
+                        {auth.user?.user_metadata?.full_name || auth.user?.email}
+                      </p>
+                      <p className="text-[11px] text-blue-600 font-medium truncate">
+                        {auth.agency?.name || 'צוות פריים'} ({auth.member?.role === 'owner' ? 'מנהל' : 'סוכן'})
+                      </p>
+                    </div>
+
+                    {auth.agency?.invite_code && (
+                      <div className="p-2 bg-slate-50 rounded-lg mb-2">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                          <span>קוד הזמנה לצוות:</span>
+                          <span className="font-mono font-bold text-slate-800 tracking-wider">
+                            {auth.agency.invite_code}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (auth.agency?.invite_code) {
+                              navigator.clipboard.writeText(auth.agency.invite_code)
+                              setCopiedCode(true)
+                              setTimeout(() => setCopiedCode(false), 2000)
+                            }
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-1 px-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-[11px] text-slate-700 font-medium transition-colors"
+                        >
+                          {copiedCode ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3 text-slate-400" />}
+                          <span>{copiedCode ? 'הועתק ללוח!' : 'העתק קוד לצירוף שותף'}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false)
+                        signOut()
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="size-3.5" />
+                      <span>התנתקות</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={onOpenAuth}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors"
+                title="התחברות או הצטרפות לצוות"
+              >
+                <LogIn className="size-3.5 text-blue-600" />
+                <span className="hidden sm:inline">התחבר לצוות</span>
+              </button>
             )}
           </div>
         </div>

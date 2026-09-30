@@ -52,6 +52,7 @@ export interface Property {
   hide_exact_address: boolean // Anti-Poaching toggle
   notes: string // הערות פרטיות, פרטי בעלים, פרטי סוכן שת״פ
   photos: string[]
+  agency_id?: string
 }
 
 export type LeadSource = 'whatsapp' | 'yad2' | 'messenger' | 'phone_call' | 'referral' | 'direct'
@@ -90,6 +91,7 @@ export interface Lead {
   next_followup?: string
   commission_agreed?: string // למשל "2% + מע״מ" או "חודש + מע״מ"
   notes: string
+  agency_id?: string
 }
 
 export type ReminderType = 'showing_meeting' | 'followup_call' | 'exclusivity_renewal' | 'heskem_tivuch'
@@ -107,6 +109,7 @@ export interface Reminder {
   is_completed: boolean
   notes: string
   created_at: string
+  agency_id?: string
 }
 
 export interface AgentProfile {
@@ -201,6 +204,31 @@ export interface WhatsAppIncomingListing {
   repostGroups?: string[]
   existingPropertyPrice?: number
   priceDifference?: number
+  agency_id?: string
+}
+
+export interface Agency {
+  id: string
+  name: string
+  license_number?: string
+  invite_code: string
+  created_at?: string
+}
+
+export interface AgencyMember {
+  id: string
+  agency_id: string
+  user_id: string
+  role: 'owner' | 'admin' | 'agent'
+  created_at?: string
+}
+
+export interface AuthState {
+  user: any | null
+  agency: Agency | null
+  member: AgencyMember | null
+  isLoading: boolean
+  isAuthenticated: boolean
 }
 
 export type ActiveModal =
@@ -212,6 +240,7 @@ export type ActiveModal =
   | { type: 'edit_property'; property: Property }
   | { type: 'public_preview'; property: Property; isPrintMode: boolean }
   | { type: 'onboarding_tour' }
+  | { type: 'auth'; initialMode?: 'signin' | 'signup' | 'join' }
   | null
 
 

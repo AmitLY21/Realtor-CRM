@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { seedTestFixtures } from './fixtures'
 
 test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,6 +9,9 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     })
     // Navigate to the app running on localhost:5174
     await page.goto('http://localhost:5174/')
+    // Seed isolated test fixtures into Dexie for E2E assertions
+    await seedTestFixtures(page)
+    await page.reload()
     // Wait for Dexie seed data to initialize
     await expect(page.locator('header h1:has-text("RealtorCRM")')).toBeVisible({ timeout: 10000 })
   })
@@ -264,16 +268,13 @@ test.describe('Realtor CRM Israeli PWA - End-to-End Suite', () => {
     await expect(page.locator('text=המאגר שלך מוכן במצב לוח חלק (Clean Slate)!')).toBeVisible()
     await expect(page.locator('text=הדבק נכס ראשון מוואטסאפ (Smart Paste)')).toBeVisible()
 
-    // Navigate back to Settings and restore demo data
+    // Navigate back to Settings and refresh data from cloud
     await page.click('button:has-text("הגדרות")')
-    page.once('dialog', async dialog => {
-      await dialog.accept()
-    })
-    await page.click('button:has-text("טען מחדש נתוני דוגמה")')
+    await page.click('button:has-text("משוך מחדש נתונים מהענן")')
 
-    // Navigate back to Dashboard and verify demo data restored
+    // Navigate back to Dashboard
     await page.click('button:has-text("לוח בקרה")')
-    await expect(page.locator('text=ראדאר בלעדיות (מסתיים תוך 14 יום!)')).toBeVisible()
+    await expect(page.locator('header h1:has-text("RealtorCRM")')).toBeVisible()
   })
 
   test('10. First-time onboarding tour: complete multi-step guide and save realtor profile', async ({ page }) => {

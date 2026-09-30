@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { AgentProfile } from '../types'
-import { db, exportFullDatabase, clearAllDataToCleanSlate, restoreDemoSeedData } from '../lib/db'
+import { db, exportFullDatabase, clearAllDataToCleanSlate } from '../lib/db'
 import { ensureStoragePersistence } from '../lib/imageCompressor'
 import { 
   Shield, 
@@ -10,7 +10,6 @@ import {
   HardDrive, 
   CheckCircle2, 
   Trash2, 
-  RotateCcw, 
   Sparkles,
   Wifi,
   AlertCircle,
@@ -469,16 +468,14 @@ END $$;
             <button
               type="button"
               onClick={async () => {
-                if (window.confirm('לטעון מחדש את נתוני הדוגמה הישראליים למאגר?')) {
-                  await restoreDemoSeedData()
-                  setStatusMessage('נתוני הדוגמה נטענו מחדש בהצלחה!')
-                  setTimeout(() => setStatusMessage(null), 4000)
-                }
+                const res = await pullAllFromSupabase()
+                setStatusMessage(res.message)
+                setTimeout(() => setStatusMessage(null), 4000)
               }}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium transition-colors"
             >
-              <RotateCcw className="size-3.5 text-slate-500" />
-              <span>טען מחדש נתוני דוגמה</span>
+              <RefreshCw className="size-3.5 text-slate-500" />
+              <span>משוך מחדש נתונים מהענן (Supabase Pull)</span>
             </button>
           </div>
 

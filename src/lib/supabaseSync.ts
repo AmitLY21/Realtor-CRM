@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase/client'
 import { db } from './db'
+import { getCurrentAgencyId } from './auth'
 import type { 
   Property, 
   Lead, 
@@ -120,7 +121,8 @@ export async function checkSupabaseTables(): Promise<{ ok: boolean; missing: str
 
   for (const table of REQUIRED_TABLES) {
     try {
-      const res = await supabase.from(table).select('id').limit(1)
+      const col = table === 'settings' ? 'key' : 'id'
+      const res = await supabase.from(table).select(col).limit(1)
       if (res.error && (res.error.code === 'PGRST205' || res.status === 404 || res.error.message.includes('schema cache'))) {
         missing.push(table)
       }
@@ -156,6 +158,11 @@ async function pushRecord(table: TableName, record: any) {
       payload = mapNotificationToDb(record)
     } else if (table === 'incoming_listings') {
       payload = mapIncomingListingToDb(record)
+    }
+
+    const agencyId = getCurrentAgencyId()
+    if (agencyId && !payload.agency_id && table !== 'settings') {
+      payload.agency_id = agencyId
     }
 
     const { error } = await supabase.from(table).upsert(payload)
@@ -255,6 +262,8 @@ export async function pushAllToSupabase(): Promise<{ success: boolean; message: 
   }
 }
 
+let isPullInProgress = false
+
 // Pull all data from Supabase into local Dexie
 export async function pullAllFromSupabase(): Promise<{ success: boolean; message: string }> {
   if (!isSupabaseConfigured) {
@@ -264,6 +273,11 @@ export async function pullAllFromSupabase(): Promise<{ success: boolean; message
     }
   }
 
+  if (isPullInProgress) {
+    return { success: true, message: 'סנכרון כבר מתבצע ברקע' }
+  }
+
+  isPullInProgress = true
   updateState({ status: 'syncing', message: 'מוריד נתונים מהענן למאגר המקומי...' })
 
   try {
@@ -277,46 +291,56 @@ export async function pullAllFromSupabase(): Promise<{ success: boolean; message
 
     isSyncingFromRemote = true
 
-    // Properties
-    const { data: props, error: propsErr } = await supabase.from('properties').select('*')
+    const agencyId = getCurrentAgencyId()
+    const buildTableQuery = (table: string) => {
+      let q = supabase.from(table).select('*')
+      if (agencyId) {
+        q = q.or(`agency_id.eq.${agencyId},agency_id.is.null`)
+      }
+      return q
+    }
+
+    // 1. Properties - safe upsert, preserve local additions
+    const { data: props, error: propsErr } = await buildTableQuery('properties')
     if (propsErr) throw propsErr
     if (props && props.length > 0) {
       await db.properties.bulkPut(props as Property[])
     }
 
-    // Leads
-    const { data: leads, error: leadsErr } = await supabase.from('leads').select('*')
+    // 2. Leads - safe upsert, preserve local additions
+    const { data: leads, error: leadsErr } = await buildTableQuery('leads')
     if (leadsErr) throw leadsErr
     if (leads && leads.length > 0) {
       await db.leads.bulkPut(leads as Lead[])
     }
 
-    // Reminders
-    const { data: rems, error: remsErr } = await supabase.from('reminders').select('*')
+    // 3. Reminders - safe upsert, preserve local additions
+    const { data: rems, error: remsErr } = await buildTableQuery('reminders')
     if (remsErr) throw remsErr
     if (rems && rems.length > 0) {
       await db.reminders.bulkPut(rems as Reminder[])
     }
 
-    // Settings
+    // 4. Settings
     const { data: sets, error: setsErr } = await supabase.from('settings').select('*')
     if (setsErr) throw setsErr
     if (sets && sets.length > 0) {
       await db.settings.bulkPut(sets as { key: string; value: any }[])
     }
 
-    // Notifications
-    const { data: notifs, error: notifsErr } = await supabase.from('notifications').select('*')
+    // 5. Notifications
+    const { data: notifs, error: notifsErr } = await buildTableQuery('notifications')
     if (notifsErr) throw notifsErr
     if (notifs && notifs.length > 0) {
       await db.notifications.bulkPut(notifs.map(mapNotificationFromDb))
     }
 
-    // Incoming listings
-    const { data: list, error: listErr } = await supabase.from('incoming_listings').select('*')
+    // 6. Incoming listings - safe upsert, preserve local additions
+    const { data: list, error: listErr } = await buildTableQuery('incoming_listings')
     if (listErr) throw listErr
     if (list && list.length > 0) {
-      await db.incoming_listings.bulkPut(list.map(mapIncomingListingFromDb))
+      const mappedList = list.map(mapIncomingListingFromDb)
+      await db.incoming_listings.bulkPut(mappedList)
     }
 
     const now = new Date().toISOString()
@@ -332,6 +356,7 @@ export async function pullAllFromSupabase(): Promise<{ success: boolean; message
     return { success: false, message: err.message || 'שגיאה במשיכת נתונים' }
   } finally {
     isSyncingFromRemote = false
+    isPullInProgress = false
   }
 }
 
@@ -416,6 +441,112 @@ export function setupSupabaseRealtime() {
     .subscribe()
 }
 
+// Polling and window event listeners
+let isPollingInitialized = false
+let pollIntervalId: any = null
+
+export function stopSyncPolling() {
+  if (pollIntervalId) {
+    clearInterval(pollIntervalId)
+    pollIntervalId = null
+  }
+  isPollingInitialized = false
+}
+
+export function setupSyncPolling(intervalMs = 30000) {
+  if (isPollingInitialized || typeof window === 'undefined') return
+  isPollingInitialized = true
+
+  // Poll immediately when tab regains focus
+  window.addEventListener('focus', () => {
+    pullAllFromSupabase().catch(err => console.warn('[SupabaseSync] Focus sync failed:', err))
+  })
+
+  // Poll when internet connection is restored
+  window.addEventListener('online', () => {
+    pullAllFromSupabase().catch(err => console.warn('[SupabaseSync] Online sync failed:', err))
+  })
+
+  // Periodic background polling (when document is visible)
+  pollIntervalId = setInterval(() => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      pullAllFromSupabase().catch(err => console.warn('[SupabaseSync] Periodic sync failed:', err))
+    }
+  }, intervalMs)
+}
+
+// Auto-upload any local Dexie records that are missing in Supabase
+export async function reconcileLocalAndCloud() {
+  if (!isSupabaseConfigured) return
+
+  try {
+    const agencyId = getCurrentAgencyId()
+
+    // 1. Properties
+    const localProps = await db.properties.toArray()
+    if (localProps.length > 0) {
+      const { data: remoteRows } = await supabase.from('properties').select('id')
+      const remoteIds = new Set((remoteRows || []).map(r => r.id))
+      const missingOnRemote = localProps.filter(p => !remoteIds.has(p.id))
+      if (missingOnRemote.length > 0) {
+        console.log(`[SupabaseSync] Reconciling: Uploading ${missingOnRemote.length} local properties to cloud...`)
+        const payload = missingOnRemote.map(p => ({
+          ...p,
+          agency_id: p.agency_id || agencyId || undefined
+        }))
+        await supabase.from('properties').upsert(payload)
+      }
+    }
+
+    // 2. Leads
+    const localLeads = await db.leads.toArray()
+    if (localLeads.length > 0) {
+      const { data: remoteLeads } = await supabase.from('leads').select('id')
+      const remoteLeadIds = new Set((remoteLeads || []).map(r => r.id))
+      const missingLeads = localLeads.filter(l => !remoteLeadIds.has(l.id))
+      if (missingLeads.length > 0) {
+        const payload = missingLeads.map(l => ({
+          ...l,
+          agency_id: l.agency_id || agencyId || undefined
+        }))
+        await supabase.from('leads').upsert(payload)
+      }
+    }
+
+    // 3. Reminders
+    const localRems = await db.reminders.toArray()
+    if (localRems.length > 0) {
+      const { data: remoteRems } = await supabase.from('reminders').select('id')
+      const remoteRemIds = new Set((remoteRems || []).map(r => r.id))
+      const missingRems = localRems.filter(r => !remoteRemIds.has(r.id))
+      if (missingRems.length > 0) {
+        const payload = missingRems.map(r => ({
+          ...r,
+          agency_id: r.agency_id || agencyId || undefined
+        }))
+        await supabase.from('reminders').upsert(payload)
+      }
+    }
+
+    // 4. Incoming listings
+    const localListings = await db.incoming_listings.toArray()
+    if (localListings.length > 0) {
+      const { data: remoteListings } = await supabase.from('incoming_listings').select('id')
+      const remoteListingIds = new Set((remoteListings || []).map(r => r.id))
+      const missingListings = localListings.filter(l => !remoteListingIds.has(l.id))
+      if (missingListings.length > 0) {
+        const payload = missingListings.map(l => ({
+          ...mapIncomingListingToDb(l),
+          agency_id: l.agency_id || agencyId || undefined
+        }))
+        await supabase.from('incoming_listings').upsert(payload)
+      }
+    }
+  } catch (err) {
+    console.warn('[SupabaseSync] Reconcile error:', err)
+  }
+}
+
 // Master init function to start sync engine
 export async function initSupabaseSync() {
   if (!isSupabaseConfigured) {
@@ -426,9 +557,24 @@ export async function initSupabaseSync() {
     })
     return
   }
+
+  // 1. Hook local Dexie modifications to auto-push
   setupDexieSupabaseHooks()
+
+  // 2. Check if tables exist in Supabase
   const { ok } = await checkSupabaseTables()
   if (ok) {
+    // 3. Reconcile: If this machine has local records not yet in cloud, upload them
+    await reconcileLocalAndCloud()
+
+    // 4. Immediately pull cloud records to hydrate local database on startup
+    await pullAllFromSupabase()
+
+    // 5. Setup live Realtime subscription
     setupSupabaseRealtime()
+
+    // 6. Setup focus/online/interval polling for continuous synchronization
+    setupSyncPolling()
   }
 }
+
